@@ -1,0 +1,92 @@
+<head>
+  <title>Sumget</title>
+</head>
+
+<body>
+	
+  <div id="outer">		
+		{{> newBoxButton }}
+		
+		{{> boxContainer }}
+  </div>
+</body>
+
+<template name="boxContainer">
+  {{#if showCreateDialog}}
+    {{> createDialog}}
+  {{/if}}
+	
+  <div style="float: right">	
+		{{loginButtons align="right"}}
+	</div>
+		
+	
+	<div class="boxContainer">
+	  {{#each boxes}}	  
+			{{> box}}
+		{{/each}}	
+	</div>
+</template>
+
+<template name="box">
+  <div class="box">
+    {{#each items}}
+      {{> item}}
+    {{/each}}
+  </div>
+
+  {{#if selected_name}}
+  <div class="details">
+    <div class="name">{{selected_name}}</div>
+    <input type="button" class="inc" value="Give 5 points" />
+  </div>
+  {{/if}}
+
+  {{#unless selected_name}}
+  <div class="none">Click a item to select</div>
+  {{/unless}}
+
+  <div class="sumcontainer">Sum:  
+	  <div id="sum">{{sum}}</div>
+  </div>
+</template>
+
+<template name="item">
+  <div class="item {{selected}}">
+    <span class="name">{{name}}</span>
+    <input class="score" value ={{score}}></input>
+  </div>
+</template>
+
+<template name="createDialog">
+  <div class="mask"> </div>
+  <div class="modal">
+    <div class="modal-header">
+      <button type="button" class="close cancel">&times;</button>
+      <h3>Add party</h3>
+    </div>
+
+    <div class="modal-body">
+      {{#if error}}
+        <div class="alert alert-error">{{error}}</div>
+      {{/if}}
+
+      <label>Title</label>
+      <input type="text" class="title span5">
+
+      <label>Description</label>
+      <textarea class="description span5"></textarea>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn cancel">Cancel</a>
+      <a href="#" class="btn btn-primary save">Add Box</a>
+    </div>
+  </div>
+</template>
+
+<template name="newBoxButton">
+	<div>
+		<button type="button" class="close cancel">New Box</button>
+	</div>
+</template>
