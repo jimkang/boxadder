@@ -22,17 +22,28 @@
 		
 	
 	<div class="boxContainer">
-	  {{#each boxes}}	  
-			{{> box}}
+	  {{#each boxes}}
+			{{! The box template object's methods will be executed in such a context
+				that all of the Box model's properties, like _id and description, will 
+				be available via this. Not sure why yet.
+			}}
+			{{> box }}
 		{{/each}}	
 	</div>
 </template>
 
 <template name="box">
+
   <div class="box">
     {{#each items}}
       {{> item}}
     {{/each}}
+    <div id="new-item-box">
+      <input type="text" class="title" placeholder="New item" />
+      <input type="text" class="description" placeholder="" />
+      <input type="text" class="score" placeholder="0" />
+	    <input type="button" class="add-new-item" value="Add to box" />
+    </div>
   </div>
 
   {{#if selected_name}}
@@ -53,7 +64,7 @@
 
 <template name="item">
   <div class="item {{selected}}">
-    <span class="name">{{name}}</span>
+    <span class="title">{{title}}</span>
     <input class="score" value ={{score}}></input>
   </div>
 </template>

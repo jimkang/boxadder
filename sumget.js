@@ -7,33 +7,57 @@ if (Meteor.isClient) {
 	
 	Template.boxContainer.showCreateDialog = function() {
 		return Session.get("showCreateDialog");
-	}
+	}	
 	
 	// Sum up all the items in a box
 	Template.box.sum = function()
 	{
-	};
-	
-	Template.box.calculateSum = function() {
+		// The fetch call is important here. We want the actual collection, not 
+		// the cursor.
+		var items = Items.find({ boxId: this._id }).fetch();
+		
 		var total = 0;
-		if (this.items !== undefined)
+		if (items !== undefined)
 		{
-			for (var i = 0; i < this.items.count; ++i)
+			for (var i = 0; i < items.length; ++i)
 			{
-				total += this.items[i].score;
+				total += items[i].score;
 			}
 		}
 		return total;
 	};
 	
   Template.box.items = function () {
-    return Items.find({}, {sort: {score: -1, name: 1}});
+		return Items.find({ boxId: this._id });
   };
 
   Template.box.selected_name = function () {
     var item = Items.findOne(Session.get("selected_item"));
     return item && item.name;
   };
+	
+  Template.box.events({
+    'click input.inc': function () {
+      items.update(Session.get("selected_item"), {$inc: {score: 5}});
+    },
+		'click .add-new-item': function (event, template) {
+		    var title = template.find("#new-item-box .title").value;
+		    var description = template.find("#new-item-box .description").value;
+		    var score = parseInt(template.find("#new-item-box .score").value);
+			
+	      Meteor.call('createItem', {
+	        title: title,
+	        description: description,
+					score: score,
+					boxId: this._id
+	      }, 
+				function (error, box) {
+	        if (! error) {
+						// TODO.
+	        }
+	      });
+		}
+	});	
 
   Template.item.selected = function () {
     return Session.equals("selected_item", this._id) ? "selected" : '';
@@ -69,12 +93,6 @@ if (Meteor.isClient) {
 	Template.createDialog.error = function () {
 	  return Session.get("createError");
 	};
-
-  Template.box.events({
-    'click input.inc': function () {
-      items.update(Session.get("selected_item"), {$inc: {score: 5}});
-    }
-  });
 
   Template.item.events({
     'click': function () {

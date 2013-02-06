@@ -51,6 +51,20 @@ Meteor.methods({
       owner: this.userId,
       title: options.title,
       description: options.description
+    });				
+  },
+  createItem: function (options) {
+    options = options || {};
+    if (! (typeof options.score === "number" && options.boxId.length))
+      throw new Meteor.Error(400, "Required parameter missing");
+    if (! this.userId)
+      throw new Meteor.Error(403, "You must be logged in");
+
+    return Items.insert({
+			boxId: options.boxId,
+			score: options.score,
+      title: options.title,
+      description: options.description
     });
   }
 });
