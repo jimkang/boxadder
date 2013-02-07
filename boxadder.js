@@ -26,14 +26,18 @@ if (Meteor.isClient) {
 					.attr("class", cssClass);
 	      };
 				
-	      var updateItemLabels = function (group) {
+	      var positionItemLabels = function (group) {
+					// We are running all these methods (attr, append, etc.) on the group
+					// not just one node. Keep it in mind.
 	        group.attr("id", function (item) { return item._id; })
-	        .text(function (item) {return item.title ;})
-					// Label text elements need to be offset a bit from the label rect.
-	        .attr("x", function (item) { return item.x + 24; })
-	        .attr("y", function (item) { return item.y + 24; });
+						// .text(function (item) {return item.title ;})
+						// Label text elements need to be offset a bit from the label rect.						
+		        .attr("x", function (item) { return item.x + 24; })
+		        .attr("y", function (item) { return item.y + 24; })
+		        .attr("width", function (item) { return item.width; })
+		        .attr("height", function (item) { return item.height; });
 	      };
-				
+								
 	      var boxesDrawings = 
 					d3.select(self.node).select(".boxZone").selectAll("rect .box")
 	        	.data(Boxes.find().fetch(), function (box) { return box._id; });
@@ -47,11 +51,20 @@ if (Meteor.isClient) {
 	      updateRectObjects(itemDrawings.enter().append("rect"), "item");
 				
 				// Create <text> elements for each item.
-	      var itemLabels = d3.select(self.node).select(".labels").selectAll("text")
-	        .data(Items.find().fetch(), function (item) { return item._id; });
+	      var itemLabels = 
+					d3.select(self.node).select(".labels").selectAll("foreignObject")
+					.data(Items.find().fetch(), function (item) { return item._id; });
 				// console.log(labels);
 				
-				updateItemLabels(itemLabels.enter().append("text"));
+				positionItemLabels(itemLabels.enter().append("foreignObject"));				
+				// Populate the foreignObject items using the item template.
+				$('foreignObject').each(function (index, foreignObject) { 
+					$(foreignObject).append(
+						"<body xmlns=\"http://www.w3.org/1999/xhtml\"></body>")
+					.append(
+						Template.item(Items.find().fetch({ _id: foreignObject._id })[0])); 
+					});
+				
 				itemLabels.exit().remove();
 			});
 		}	
