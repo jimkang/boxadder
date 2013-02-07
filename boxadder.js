@@ -29,8 +29,9 @@ if (Meteor.isClient) {
 	      var updateItemLabels = function (group) {
 	        group.attr("id", function (item) { return item._id; })
 	        .text(function (item) {return item.title ;})
-	        .attr("x", function (item) { return item.x; })
-	        .attr("y", function (item) { return item.y; });
+					// Label text elements need to be offset a bit from the label rect.
+	        .attr("x", function (item) { return item.x + 24; })
+	        .attr("y", function (item) { return item.y + 24; });
 	      };
 				
 	      var boxesDrawings = 
@@ -44,7 +45,8 @@ if (Meteor.isClient) {
 	        	.data(Items.find().fetch(), function (item) { return item._id; });
 	
 	      updateRectObjects(itemDrawings.enter().append("rect"), "item");
-								
+				
+				// Create <text> elements for each item.
 	      var itemLabels = d3.select(self.node).select(".labels").selectAll("text")
 	        .data(Items.find().fetch(), function (item) { return item._id; });
 				// console.log(labels);
