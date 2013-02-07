@@ -44,22 +44,13 @@
       <input type="text" class="score" placeholder="0" />
 	    <input type="button" class="add-new-item" value="Add to box" />
     </div>
+		
+	  <div class="sumcontainer">Sum:  
+		  <span id="sum">{{sum}}</span>
+	  </div>
+		
   </div>
 
-  {{#if selected_name}}
-  <div class="details">
-    <div class="name">{{selected_name}}</div>
-    <input type="button" class="inc" value="Give 5 points" />
-  </div>
-  {{/if}}
-
-  {{#unless selected_name}}
-  <div class="none">Click a item to select</div>
-  {{/unless}}
-
-  <div class="sumcontainer">Sum:  
-	  <div id="sum">{{sum}}</div>
-  </div>
 </template>
 
 <template name="item">
