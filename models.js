@@ -38,7 +38,9 @@ Meteor.methods({
     options = options || {};
     if (! (typeof options.title === "string" && options.title.length &&
            typeof options.description === "string" &&
-           options.description.length))
+           options.description.length &&
+					 typeof options.x === "number" && typeof options.y === "number" &&
+					 typeof options.width === "number" && typeof options.height === "number"))
       throw new Meteor.Error(400, "Required parameter missing");
     if (options.title.length > 100)
       throw new Meteor.Error(413, "Title too long");
@@ -50,21 +52,32 @@ Meteor.methods({
     return Boxes.insert({
       owner: this.userId,
       title: options.title,
-      description: options.description
+      description: options.description,
+			x: options.x,
+			y: options.x,
+			width: options.width,
+			height: options.height
     });				
   },
   createItem: function (options) {
     options = options || {};
-    if (! (typeof options.score === "number" && options.boxId.length))
+    if (! (typeof options.score === "number" && options.title.length &&
+					 typeof options.x === "number" && typeof options.y === "number" &&
+					 typeof options.width === "number" && 
+					 typeof options.height === "number"))
       throw new Meteor.Error(400, "Required parameter missing");
     if (! this.userId)
       throw new Meteor.Error(403, "You must be logged in");
 
     return Items.insert({
-			boxId: options.boxId,
-			score: options.score,
       title: options.title,
-      description: options.description
+			score: options.score,
+      description: options.description,
+			owner: this.userId,
+			x: options.x,
+			y: options.x,
+			width: options.width,
+			height: options.height			
     });
   }
 });

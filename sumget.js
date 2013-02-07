@@ -1,6 +1,60 @@
 
 if (Meteor.isClient) {
 	
+	Template.board.rendered = function () {
+	  var self = this;
+	  self.node = self.find("svg");
+	
+	  if (! self.handle) {
+	    self.handle = Meteor.autorun(function () {
+				
+	      // var selectedParty = selected && Parties.findOne(selected);
+	      var radius = 10;
+				// function (party) {
+				// 	        return 10 + Math.sqrt(attending(party)) * 10;
+				// 	      };
+	
+	      // Draw a rect for each box or item object
+	      var updateRectObjects = function (group, cssClass) {					
+	        group.attr("id", function (rectObj) { return rectObj._id; })
+	        .attr("x", function (rectObj) { return rectObj.x; })
+	        .attr("y", function (rectObj) { return rectObj.y; })
+	        .attr("width", function (rectObj) { return rectObj.width; })
+	        .attr("height", function (rectObj) { return rectObj.height; })
+					// Need to set class for CSS. Setting attr seems to clear everything 
+					// that's not explicitly set.
+					.attr("class", cssClass);
+	      };
+				
+	      var updateItemLabels = function (group) {
+	        group.attr("id", function (item) { return item._id; })
+	        .text(function (item) {return item.title ;})
+	        .attr("x", function (item) { return item.x; })
+	        .attr("y", function (item) { return item.y; });
+	      };
+				
+	      var boxesDrawings = 
+					d3.select(self.node).select(".boxZone").selectAll("rect .box")
+	        	.data(Boxes.find().fetch(), function (box) { return box._id; });
+	
+	      updateRectObjects(boxesDrawings.enter().append("rect"), "box");
+
+	      var itemDrawings = 
+					d3.select(self.node).select(".boxZone").selectAll("rect .item")
+	        	.data(Items.find().fetch(), function (item) { return item._id; });
+	
+	      updateRectObjects(itemDrawings.enter().append("rect"), "item");
+								
+	      var itemLabels = d3.select(self.node).select(".labels").selectAll("text")
+	        .data(Items.find().fetch(), function (item) { return item._id; });
+				// console.log(labels);
+				
+				updateItemLabels(itemLabels.enter().append("text"));
+				itemLabels.exit().remove();
+			});
+		}	
+	};
+	
 	Template.boxContainer.boxes = function () {
 	  return Boxes.find({});
 	};
@@ -45,17 +99,29 @@ if (Meteor.isClient) {
 		    var description = template.find("#new-item-box .description").value;
 		    var score = parseInt(template.find("#new-item-box .score").value);
 			
+			  var nextItemX = Session.get("nextItemX");
+			  var nextItemY = Session.get("nextItemY");
+				if (nextItemX === undefined) {
+					nextItemX = 0;
+				}
+				if (nextItemY === undefined) {
+					nextItemY = 0;
+				}
+				
 	      Meteor.call('createItem', {
 	        title: title,
 	        description: description,
 					score: score,
-					boxId: this._id
+					x: nextItemX, y: nextItemY, width: 240, height: 44
 	      }, 
 				function (error, box) {
 	        if (! error) {
 						// TODO.
 	        }
 	      });
+				
+				Session.set("nextItemX", nextItemX + 52);
+				Session.set("nextItemY", nextItemY + 52);				
 		}
 	});	
 
@@ -69,9 +135,20 @@ if (Meteor.isClient) {
 	    var description = template.find(".description").value;
 
 	    if (title.length && description.length) {
+				
+			  var nextBoxX = Session.get("nextBoxX");
+			  var nextBoxY = Session.get("nextBoxY");
+				if (nextBoxX === undefined) {
+					nextBoxX = 0;
+				}
+				if (nextBoxY === undefined) {
+					nextBoxY = 0;
+				}
+				
 	      Meteor.call('createBox', {
 	        title: title,
-	        description: description
+	        description: description,
+					x: nextBoxX, y: nextBoxY, width: 320, height: 320
 	      }, 
 				function (error, box) {
 	        if (! error) {
@@ -79,6 +156,11 @@ if (Meteor.isClient) {
 	        }
 	      });
 	      Session.set("showCreateDialog", false);
+				
+				// TODO: Wrap to next row at some point.
+				Session.set("nextBoxX", nextBoxX + 64);
+				Session.set("nextBoxY", nextBoxY + 64);
+				
 	    } else {
 	      Session.set("createError",
 	                  "It needs a title and a description, or why bother?");
@@ -114,18 +196,8 @@ if (Meteor.isClient) {
 	});		
 }
 
-// On server startup, create some items if the database is empty.
+
 if (Meteor.isServer) {
   Meteor.startup(function () {
-    if (Items.find().count() === 0) {
-      var names = ["Ada Lovelace",
-                   "Grace Hopper",
-                   "Marie Curie",
-                   "Carl Friedrich Gauss",
-                   "Nikola Tesla",
-                   "Claude Shannon"];
-      for (var i = 0; i < names.length; i++)
-        Items.insert({name: names[i], score: Math.floor(Math.random()*10)*5});
-    }
   });
 }

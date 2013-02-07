@@ -8,8 +8,23 @@
 		{{> newBoxButton }}
 		
 		{{> boxContainer }}
+		
+		{{> board }}
   </div>
 </body>
+
+<template name="board">
+  <div class="board">
+    {{#constant}}
+      <svg width="1024" height="1024">
+        <rect class="box" x=-100 y=-100></rect>
+        <rect class="item" x=-100 y=-100></rect>
+        <g class="boxZone"></g>
+        <g class="labels"></g>
+      </svg>
+    {{/constant}}
+  </div>
+</template>
 
 <template name="boxContainer">
   {{#if showCreateDialog}}
@@ -65,7 +80,7 @@
   <div class="modal">
     <div class="modal-header">
       <button type="button" class="close cancel">&times;</button>
-      <h3>Add party</h3>
+      <h3>Add box</h3>
     </div>
 
     <div class="modal-body">

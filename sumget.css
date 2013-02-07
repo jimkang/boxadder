@@ -11,13 +11,31 @@ body {
 }
 
 #outer {
-    width: 600px;
+    width: 1024px;
     margin: 0 auto;    
 }
 
-.box
+.board
 {
 	border: 1px dotted #444;
+}
+
+.boxZone .box
+{
+  stroke-width: 5px;
+  stroke-dasharray: 9, 5;
+  stroke-opacity: .8;
+  fill: none;
+  stroke: red;	
+}
+
+.boxZone .item
+{
+  stroke-width: 5px;
+  stroke-dasharray: 9, 5;
+  stroke-opacity: .8;
+  fill: none;
+  stroke: blue;	
 }
 
 .item {
