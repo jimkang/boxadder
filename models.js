@@ -54,7 +54,7 @@ Meteor.methods({
       title: options.title,
       description: options.description,
 			x: options.x,
-			y: options.x,
+			y: options.y,
 			width: options.width,
 			height: options.height
     });				
