@@ -20,7 +20,8 @@
         <rect class="box" x=-100 y=-100></rect>
         <rect class="item" x=-100 y=-100></rect>
         <g class="boxZone"></g>
-        <g class="labels"></g>
+        <g class="itemLabels"></g>
+        <g class="sumLabels"></g>
       </svg>
     {{/constant}}
   </div>
@@ -47,14 +48,16 @@
 	</div>
 </template>
 
+<template name="sumContainer">
+  <div class="sumcontainer">Sum:  
+		<span id="sum">{{sum}}</span>
+  </div>
+</template>
+
 <template name="box">
 
   <div class="box">
-		
-	  <div class="sumcontainer">Sum:  
-		  <span id="sum">{{sum}}</span>
-	  </div>
-		
+				
   </div>
 
 </template>
@@ -64,7 +67,7 @@
     <input type="text" class="title" placeholder="New item" />
     <input type="text" class="description" placeholder="" />
     <input type="text" class="score" placeholder="0" />
-    <input type="button" class="add-new-item" value="Add to box" />
+    <input type="button" class="add-new-item" value="Add Item" />
   </div>
 </template>	
 

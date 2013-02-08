@@ -33,7 +33,8 @@ if (Meteor.isClient) {
 		        .attr("x", function (item) { return item.x; })
 		        .attr("y", function (item) { return item.y; })
 		        .attr("width", function (item) { return item.width; })
-		        .attr("height", function (item) { return item.height + 4; });
+		        .attr("height", function (item) { return item.height + 4; })
+						.classed("itemLabel", true);
 	      };
 								
 	      var boxesDrawings = 
@@ -41,6 +42,29 @@ if (Meteor.isClient) {
 	        	.data(Boxes.find().fetch(), function (box) { return box._id; });
 	
 	      updateRectObjects(boxesDrawings.enter().append("rect"), "box");
+				
+				// Create <foreignObject> elements for each box to hold sums.
+	      var sumLabels = 
+					d3.select(self.node).select(".sumLabels").selectAll("foreignObject")
+						.data(Boxes.find().fetch(), function (box) { return box._id; });
+				sumLabels.enter().append("foreignObject").classed("sumLabel", true)
+					.attr("id", function (box) { return box._id; })
+					.attr("x", function (box) { return box.x + box.width - 100; })
+					.attr("y", function (box) { return box.y + box.height - 44; })
+					.attr("width", function (box) { return 100; })
+					.attr("height", function (box) { return 44; });
+				// Populate those foreign objects with the sum template.
+				$('.sumLabel').each(function (index, foreignObject) {
+					var theBox = 
+						Boxes.find({ _id: $(foreignObject).attr("id") }).fetch()[0];
+
+					$(foreignObject).append(
+						"<body xmlns=\"http://www.w3.org/1999/xhtml\"></body>")
+					// Be careful to specify the search critera to find(), not fetch().
+					.append(Template.sumContainer(theBox));
+					});
+				
+				sumLabels.exit().remove();
 
 	      var itemDrawings = 
 					d3.select(self.node).select(".boxZone").selectAll("rect .item")
@@ -50,13 +74,13 @@ if (Meteor.isClient) {
 				
 				// Create <foreignObject> elements for each item.
 	      var itemLabels = 
-					d3.select(self.node).select(".labels").selectAll("foreignObject")
+					d3.select(self.node).select(".itemLabels").selectAll("foreignObject")
 					.data(Items.find().fetch(), function (item) { return item._id; });
 				// console.log(labels);
 				
-				positionItemLabels(itemLabels.enter().append("foreignObject"));				
+				positionItemLabels(itemLabels.enter().append("foreignObject"));
 				// Populate the foreignObject items using the item template.
-				$('foreignObject').each(function (index, foreignObject) { 
+				$('.itemLabel').each(function (index, foreignObject) { 
 					$(foreignObject).append(
 						"<body xmlns=\"http://www.w3.org/1999/xhtml\"></body>")
 					// Be careful to specify the search critera to find(), not fetch().
@@ -79,18 +103,40 @@ if (Meteor.isClient) {
 	}	
 	
 	// Sum up all the items in a box
-	Template.box.sum = function()
+	Template.sumContainer.sum = function()
 	{
-		// The fetch call is important here. We want the actual collection, not 
-		// the cursor.
-		var items = Items.find({ boxId: this._id }).fetch();
-		
 		var total = 0;
-		if (items !== undefined)
-		{
-			for (var i = 0; i < items.length; ++i)
+
+		// 'this' is a Box model.
+		
+		// Find out which items intersect the box.
+		var boxLeft = this.x;
+		var boxRight = boxLeft + this.width;
+		var boxTop = this.y;
+		var boxBottom = boxTop + this.height;
+		
+		var items = Items.find().fetch();
+		var boxItems = _.filter(items, function(item) {
+			console.log(item);
+			var itemRight = item.x + item.width;
+			var itemBottom = item.y + item.height;
+			if ((item.x >= boxLeft) && (itemRight <= boxRight) &&
+				(item.y >= boxTop) && (itemBottom <= boxBottom))
 			{
-				total += items[i].score;
+				return true;				
+			}
+			else
+			{
+				console.log("Not in box: " + item);
+				return false;
+			}
+		});
+		
+		if (boxItems !== undefined)
+		{
+			for (var i = 0; i < boxItems.length; ++i)
+			{
+				total += boxItems[i].score;
 			}
 		}
 		return total;
