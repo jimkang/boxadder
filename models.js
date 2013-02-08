@@ -75,7 +75,7 @@ Meteor.methods({
       description: options.description,
 			owner: this.userId,
 			x: options.x,
-			y: options.x,
+			y: options.y,
 			width: options.width,
 			height: options.height			
     });

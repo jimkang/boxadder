@@ -107,19 +107,36 @@ if (Meteor.isClient) {
 	
   Template.addItem.events({
 		'click .add-new-item': function (event, template) {
+				var spaceBetweenItems = 52;
 		    var title = template.find("#new-item-box .title").value;
 		    var description = template.find("#new-item-box .description").value;
 		    var score = parseInt(template.find("#new-item-box .score").value);
 			
 			  var nextItemX = Session.get("nextItemX");
 			  var nextItemY = Session.get("nextItemY");
+
 				if (nextItemX === undefined) {
 					nextItemX = 0;
 				}
 				if (nextItemY === undefined) {
+					// Find the item with the greatest y and then add the offset.
 					nextItemY = 0;
+					var items = Items.find().fetch();
+					if (items.length > 0)
+					{
+						var bottomMostItem = _.reduce(items, 
+							function(memo, num) { 
+									console.log(memo);
+									return (num.y > memo.y) ? num : memo; 
+								}, 
+								items[0]);
+						
+						nextItemY = bottomMostItem.y;
+						console.log(nextItemY);
+					}
 				}
 				
+				console.log("Final nextItemY: " + nextItemY);
 	      Meteor.call('createItem', {
 	        title: title,
 	        description: description,
@@ -132,8 +149,8 @@ if (Meteor.isClient) {
 	        }
 	      });
 				
-				Session.set("nextItemX", nextItemX + 52);
-				Session.set("nextItemY", nextItemY + 52);				
+				Session.set("nextItemX", nextItemX);
+				Session.set("nextItemY", nextItemY + spaceBetweenItems);
 		}
 	});	
 
