@@ -30,12 +30,10 @@ if (Meteor.isClient) {
 					// We are running all these methods (attr, append, etc.) on the group
 					// not just one node. Keep it in mind.
 	        group.attr("id", function (item) { return item._id; })
-						// .text(function (item) {return item.title ;})
-						// Label text elements need to be offset a bit from the label rect.						
-		        .attr("x", function (item) { return item.x + 24; })
-		        .attr("y", function (item) { return item.y + 24; })
+		        .attr("x", function (item) { return item.x; })
+		        .attr("y", function (item) { return item.y; })
 		        .attr("width", function (item) { return item.width; })
-		        .attr("height", function (item) { return item.height; });
+		        .attr("height", function (item) { return item.height + 4; });
 	      };
 								
 	      var boxesDrawings = 
