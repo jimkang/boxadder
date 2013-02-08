@@ -48,7 +48,7 @@ if (Meteor.isClient) {
 	
 	      updateRectObjects(itemDrawings.enter().append("rect"), "item");
 				
-				// Create <text> elements for each item.
+				// Create <foreignObject> elements for each item.
 	      var itemLabels = 
 					d3.select(self.node).select(".labels").selectAll("foreignObject")
 					.data(Items.find().fetch(), function (item) { return item._id; });
@@ -59,8 +59,10 @@ if (Meteor.isClient) {
 				$('foreignObject').each(function (index, foreignObject) { 
 					$(foreignObject).append(
 						"<body xmlns=\"http://www.w3.org/1999/xhtml\"></body>")
+					// Be careful to specify the search critera to find(), not fetch().
 					.append(
-						Template.item(Items.find().fetch({ _id: foreignObject._id })[0])); 
+						Template.item(Items.find({ _id: $(foreignObject).attr("id") })
+						.fetch()[0]));
 					});
 				
 				itemLabels.exit().remove();
@@ -103,10 +105,7 @@ if (Meteor.isClient) {
     return item && item.name;
   };
 	
-  Template.box.events({
-    'click input.inc': function () {
-      items.update(Session.get("selected_item"), {$inc: {score: 5}});
-    },
+  Template.addItem.events({
 		'click .add-new-item': function (event, template) {
 		    var title = template.find("#new-item-box .title").value;
 		    var description = template.find("#new-item-box .description").value;
@@ -190,6 +189,9 @@ if (Meteor.isClient) {
 	};
 
   Template.item.events({
+    'click input.inc': function () {
+      items.update(Session.get("selected_item"), {$inc: {score: 5}});
+    },		
     'click': function () {
       Session.set("selected_item", this._id);
     },

@@ -1,5 +1,5 @@
 <head>
-  <title>Sumget</title>
+  <title>Boxadder</title>
 </head>
 
 <body>
@@ -35,8 +35,8 @@
 		{{loginButtons align="right"}}
 	</div>
 		
-	
 	<div class="boxContainer">
+		{{> addItem }}
 	  {{#each boxes}}
 			{{! The box template object's methods will be executed in such a context
 				that all of the Box model's properties, like _id and description, will 
@@ -50,15 +50,6 @@
 <template name="box">
 
   <div class="box">
-    {{#each items}}
-      {{> item}}
-    {{/each}}
-    <div id="new-item-box">
-      <input type="text" class="title" placeholder="New item" />
-      <input type="text" class="description" placeholder="" />
-      <input type="text" class="score" placeholder="0" />
-	    <input type="button" class="add-new-item" value="Add to box" />
-    </div>
 		
 	  <div class="sumcontainer">Sum:  
 		  <span id="sum">{{sum}}</span>
@@ -68,10 +59,19 @@
 
 </template>
 
+<template name="addItem">
+  <div id="new-item-box">
+    <input type="text" class="title" placeholder="New item" />
+    <input type="text" class="description" placeholder="" />
+    <input type="text" class="score" placeholder="0" />
+    <input type="button" class="add-new-item" value="Add to box" />
+  </div>
+</template>	
+
 <template name="item">
   <div class="item {{selected}}">
     <label class="name">{{title}}</label>
-    <input class="score" size="3" value ={{score}}></input>
+    <input class="score" size="3" value="{{score}}"></input>
   </div>
 </template>
 
