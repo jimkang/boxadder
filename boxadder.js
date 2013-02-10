@@ -53,7 +53,7 @@ if (Meteor.isClient) {
 				// Populate those foreign objects with the sum template.
 				$('.sumLabel').each(function (index, foreignObject) {
 					var theBox = 
-						Boxes.find({ _id: $(foreignObject).attr(")id") }).fetch()[0];
+						Boxes.find({ _id: $(foreignObject).attr("_id") }).fetch()[0];
 
 					$(foreignObject).append(
 						"<body xmlns=\"http://www.w3.org/1999/xhtml\"></body>")
