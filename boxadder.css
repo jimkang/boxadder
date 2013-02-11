@@ -20,27 +20,6 @@ body {
 	border: 1px dotted #444;
 }
 
-/* Applying CSS to an SVG element appears to make it undraggable.
-.boxZone .box
-{
-  stroke-width: 5px;
-  stroke-dasharray: 9, 5;
-  stroke-opacity: .8;
-  fill: none;
-  stroke: red;	
-*/}
-
-
-
-/*.boxZone .item
-{
-  stroke-width: 5px;
-  stroke-dasharray: 9, 5;
-  stroke-opacity: .8;
-  fill: none;
-  stroke: blue;	
-}
-*/
 .item {
   padding: 4px;
 	line-height: 36px;
