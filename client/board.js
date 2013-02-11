@@ -26,7 +26,7 @@ function groupdragmove(d) {
 
 var groupdrag = d3.behavior.drag().origin(Object).on("drag", groupdragmove);	
 
-function setCommonRectAttrsOnGroup(group, cssClass) {
+function syncCommonRectAttrs(group, cssClass) {
 	return setD3GroupAttrsWithProplist(group, 
 		["_id", "x", "y", "width", "height"])
 	// Need to set class for CSS. Setting attr seems to clear everything 
@@ -56,7 +56,7 @@ Template.board.rendered = function () {
 
 			// Sync the Boxes data with the box rects. Add drag behavior to them.
 			boxesSelection.enter().append("rect").call(drag);
-      setCommonRectAttrsOnGroup(boxesSelection, "box")
+      syncCommonRectAttrs(boxesSelection, "box")
 			.attr("fill", function(d) { return "red"; });
 				
 			// Create <foreignObject> elements for each box to hold sums.
@@ -94,7 +94,7 @@ Template.board.rendered = function () {
 				itemGroupSelection.append("text").text(function (d) { return d.title; }), 
 				["_id", "x", "y", "width", "height"]);
 				
-      setCommonRectAttrsOnGroup(itemGroupSelection
+      syncCommonRectAttrs(itemGroupSelection
 				.append("rect").attr("fill", function(d) { return "blue"; }), 
 				"item");
 		});
