@@ -90,16 +90,26 @@ function setUpItems(svgNode) {
     	.data(Items.find().fetch(), function (item) { return item._id; });
 					
 	itemGroupSelection.enter().append("g").call(groupdrag);
-					
-	// Set up the text.
-	setD3GroupAttrsWithProplist(
-		itemGroupSelection.append("text").text(function (d) { return d.title; }), 
-		["_id", "x", "y", "width", "height"]);
-				
+	
+	// Set up the rect and its position and color. Do this first so that it is 
+	// the furthest back, z-order-wise.
   syncCommonRectAttrs(itemGroupSelection
 		.append("rect").attr("fill", function(d) { return "blue"; }), 
 		"item");
+					
+	// Set up the title label.
+	setD3GroupAttrsWithProplist(
+		itemGroupSelection.append("text").text(function (d) { return d.title; }), 
+		["x", "y", "width", "height"]);
 		
+	// Set up the score field.
+	itemGroupSelection.append("text").text(function (d) { return d.score; })
+		.attr("x", function (item) { return item.x; })
+		.attr("y", function (item) { return item.y + 44/2; })
+		.attr("width", function (item) { return 100; })
+		.attr("height", function (item) { return 44; })
+		.attr("fill", function (item) { return "white"; });
+			
 	itemGroupSelection.exit().remove();
 }
 
