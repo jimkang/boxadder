@@ -20,8 +20,10 @@ var drag = d3.behavior.drag().origin(Object).on("drag", dragmove);
 
 function groupdragmove(d) {
   d3.selectAll(this.childNodes)
-    .attr("x", d.x = d3.event.x)
-    .attr("y", d.y = d3.event.y);
+    .attr("x", function(item) { 
+			item.x = parseInt($(this).attr("x")) + d3.event.dx; return item.x; } )
+    .attr("y", function(item) { 
+			item.y = parseInt($(this).attr("y")) + d3.event.dy; return item.y; });
 }
 
 var groupdrag = d3.behavior.drag().origin(Object).on("drag", groupdragmove);	
