@@ -102,11 +102,13 @@ function setUpItems(svgNode) {
 	// Set up the title label.
 	setD3GroupAttrsWithProplist(
 		itemGroupSelection.append("text").text(function (d) { return d.title; }), 
-		["x", "y", "width", "height"]);
+		["x", "width", "height"])
+		.attr("y", function (item) { return item.y + 44/2; })
+		.attr("fill", function (item) { return "white"; });
 		
 	// Set up the score field.
 	itemGroupSelection.append("text").text(function (d) { return d.score; })
-		.attr("x", function (item) { return item.x; })
+		.attr("x", function (item) { return 100 + item.x; })
 		.attr("y", function (item) { return item.y + 44/2; })
 		.attr("width", function (item) { return 100; })
 		.attr("height", function (item) { return 44; })
