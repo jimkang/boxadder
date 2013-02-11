@@ -1,4 +1,6 @@
-var setD3GroupAttrsWithProplist = function(group, propnames) {
+/* Board rendering helpers */
+
+function setD3GroupAttrsWithProplist(group, propnames) {
 	// We are running all these methods (attr, append, etc.) on the group
 	// not just one node. Keep it in mind.
 	for (var i = 0; i < propnames.length; ++i) {
@@ -21,29 +23,33 @@ function groupdragmove(d) {
     .attr("x", d.x = d3.event.x)
     .attr("y", d.y = d3.event.y);
 }
+
 var groupdrag = d3.behavior.drag().origin(Object).on("drag", groupdragmove);	
-	
+
+function updateRectObjects(group, cssClass) {
+	return setD3GroupAttrsWithProplist(group, 
+		["_id", "x", "y", "width", "height"])
+	// Need to set class for CSS. Setting attr seems to clear everything 
+	// that's not explicitly set.
+	.attr("class", cssClass);
+};
+
+function positionItemLabels(group) {
+	setD3GroupAttrsWithProplist(group, 
+		["_id", "x", "y", "width", "height"])
+		.classed("itemLabel", true);
+};				
+
+/* Board renderer */
+
 Template.board.rendered = function () {
   var self = this;
   self.node = self.find("svg");
 	
   if (! self.handle) {
-    self.handle = Meteor.autorun(function () {					
+    self.handle = Meteor.autorun(function () {
       // Draw a rect for each box or item object
-      var updateRectObjects = function (group, cssClass) {
-				return setD3GroupAttrsWithProplist(group, 
-					["_id", "x", "y", "width", "height"])
-				// Need to set class for CSS. Setting attr seems to clear everything 
-				// that's not explicitly set.
-				.attr("class", cssClass);
-      };
-				
-      var positionItemLabels = function (group) {
-				setD3GroupAttrsWithProplist(group, 
-					["_id", "x", "y", "width", "height"])
-					.classed("itemLabel", true);
-      };				
-				
+								
       var boxesDrawings = 
 				d3.select(self.node).select(".boxZone").selectAll("rect .box")
         	.data(Boxes.find().fetch(), function (box) { return box._id; });
@@ -73,7 +79,7 @@ Template.board.rendered = function () {
 					"<body xmlns=\"http://www.w3.org/1999/xhtml\"></body>")
 				.append(Template.sumContainer(theBox));					
 			});
-								
+			
 			sumLabels.exit().remove();
 				
       var itemDrawings = 
@@ -89,30 +95,7 @@ Template.board.rendered = function () {
 				
       updateRectObjects(itemGroupSelection
 				.append("rect").attr("fill", function(d) { return "blue"; }), 
-				"item");
-					
-								
-			// Create <foreignObject> elements for each item.
-      var itemLabels = 
-				d3.select(self.node).select(".itemLabels").selectAll("foreignObject")
-				.data(Items.find().fetch(), function (item) { return item._id; });
-			// console.log(labels);
-								
-			// positionItemLabels(itemLabels.enter().append("text")
-			// 	.text(function (d) { return d.title; }));
-					
-			// Populate the foreignObject items using the item template.
-			// $('.itemLabel').each(function (index, foreignObject) { 
-			// 	$(foreignObject).append(
-			// 		"<body xmlns=\"http://www.w3.org/1999/xhtml\"></body>")
-			// 	// Be careful to specify the search critera to find(), not fetch().
-			// 	.append(
-			// 		Template.item(Items.find({ _id: $(foreignObject).attr("_id") })
-			// 		.fetch()[0]));
-			// 	});
-			// 				
-			itemLabels.exit().remove();
-								
+				"item");																
 		});
 	}	
 };
