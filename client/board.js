@@ -26,7 +26,7 @@ function groupdragmove(d) {
 
 var groupdrag = d3.behavior.drag().origin(Object).on("drag", groupdragmove);	
 
-function updateRectObjects(group, cssClass) {
+function setCommonRectAttrsOnGroup(group, cssClass) {
 	return setD3GroupAttrsWithProplist(group, 
 		["_id", "x", "y", "width", "height"])
 	// Need to set class for CSS. Setting attr seems to clear everything 
@@ -48,14 +48,15 @@ Template.board.rendered = function () {
 	
   if (! self.handle) {
     self.handle = Meteor.autorun(function () {
-      // Draw a rect for each box or item object
-								
-      var boxesDrawings = 
+			
+      // Append Boxes to the existing box rects.
+      var boxesSelection = 
 				d3.select(self.node).select(".boxZone").selectAll("rect .box")
         	.data(Boxes.find().fetch(), function (box) { return box._id; });
-	
-			var boxesSelection = boxesDrawings.enter().append("rect").call(drag);
-      updateRectObjects(boxesSelection, "box")
+
+			// Sync the Boxes data with the box rects. Add drag behavior to them.
+			boxesSelection.enter().append("rect").call(drag);
+      setCommonRectAttrsOnGroup(boxesSelection, "box")
 			.attr("fill", function(d) { return "red"; });
 				
 			// Create <foreignObject> elements for each box to hold sums.
@@ -93,9 +94,9 @@ Template.board.rendered = function () {
 				itemGroupSelection.append("text").text(function (d) { return d.title; }), 
 				["_id", "x", "y", "width", "height"]);
 				
-      updateRectObjects(itemGroupSelection
+      setCommonRectAttrsOnGroup(itemGroupSelection
 				.append("rect").attr("fill", function(d) { return "blue"; }), 
-				"item");																
+				"item");
 		});
 	}	
 };
