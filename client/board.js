@@ -53,7 +53,8 @@ function setUpBoxes(svgNode) {
 	// Sync the Boxes data with the box rects. Add drag behavior to them.
 	boxesSelection.enter().append("rect").call(drag);
   syncCommonRectAttrs(boxesSelection, "box")
-	.attr("fill", function(d) { return "red"; });
+	.attr("fill", function(d) { return "white"; })
+	.attr("stroke", function (d) { return "red"; });
 	
 	boxesSelection.exit().remove();
 }
