@@ -159,7 +159,7 @@ function sumForBox(box) {
 		
 	var items = Items.find().fetch();
 	var boxItems = _.filter(items, function(item) {
-		console.log(item);
+		// console.log(item);
 		var itemRight = item.x + item.width;
 		var itemBottom = item.y + item.height;
 		if ((item.x >= boxLeft) && (itemRight <= boxRight) &&
@@ -169,7 +169,7 @@ function sumForBox(box) {
 		}
 		else
 		{
-			console.log("Not in box: " + item);
+			// console.log("Not in box: " + item);
 			return false;
 		}
 	});
