@@ -45,45 +45,38 @@ function positionItemLabels(group) {
 /* Element set up/syncing. */
 
 function setUpBoxes(svgNode) {
-  // Append Boxes to the existing box rects.
-  var boxesSelection = 
-		d3.select(svgNode).select(".boxZone").selectAll("rect .box")
+	// Set up the <g> elements for the boxes.
+  var boxGroupsSelection = 
+		d3.select(svgNode).select(".boxZone").selectAll("g .box")
     	.data(Boxes.find().fetch(), function (box) { return box._id; });
 
-	// Sync the Boxes data with the box rects. Add drag behavior to them.
-	boxesSelection.enter().append("rect").call(drag);
-  syncCommonRectAttrs(boxesSelection, "box")
-	.attr("fill", function(d) { return "white"; })
-	.attr("stroke", function (d) { return "red"; });
-	
-	boxesSelection.exit().remove();
-}
+  // Sync the <g> elements to the box records. Add the drag behavior.
+	boxGroupsSelection.enter().append("g").call(groupdrag);
 
-function setUpSums(svgNode) {
-	// Create <foreignObject> elements for each box to hold sums.
-  var sumLabels = 
-		d3.select(svgNode).select(".sumLabels").selectAll("foreignObject")
-			.data(Boxes.find().fetch(), function (box) { return box._id; });
-			
-	sumLabels.enter().append("foreignObject").classed("sumLabel", true)
-		.attr("_id", function (box) { return box._id; })
-		.attr("x", function (box) { return box.x + box.width - 100; })
-		.attr("y", function (box) { return box.y + box.height - 44; })
-		.attr("width", function (box) { return 100; })
-		.attr("height", function (box) { return 44; });
-				
-	// Populate those foreign objects with the sum template.
-	$('.sumLabel').each(function (index, foreignObject) {
-		// Be careful to give the search criteria to find(), not to fetch().
-		var theBox = 
-			Boxes.find({ _id: $(foreignObject).attr("_id") }).fetch()[0];
-				
-		$(foreignObject).append(
-			"<body xmlns=\"http://www.w3.org/1999/xhtml\"></body>")
-		.append(Template.sumContainer(theBox));					
-	});	
+	// Set up the rect and its position and color. Append it first so that it is 
+	// the furthest back, z-order-wise.
+  syncCommonRectAttrs(boxGroupsSelection.append("rect")
+		.attr("fill", function(d) { return "white"; })
+		.attr("stroke", function (d) { return "red"; }),
+		"box");
+		
+	// Add the sum box and label to the boxes.
+	boxGroupsSelection.append("rect").classed("sum", true)
+	.attr("stroke", "red").attr("fill", "orange")
+	.attr("x", function (box) { return box.x + box.width - 100; })
+	.attr("y", function (box) { return box.y + box.height - 44; })
+	.attr("width", function (box) { return 100; })
+	.attr("height", function (box) { return 44; });
 	
-	sumLabels.exit().remove();	
+	boxGroupsSelection.append("text").text(
+		function (box) { return sumForBox(box); })
+		.attr("x", function (box) { return box.x + box.width - 100/2; })
+		.attr("y", function (box) { return box.y + box.height - 44/2 + 4; })
+		.attr("width", function (box) { return 100; })
+		.attr("height", function (box) { return 44; })
+		.attr("fill", function (box) { return "white"; });
+	
+	boxGroupsSelection.exit().remove();
 }
 
 function setUpItems(svgNode) {
@@ -127,7 +120,6 @@ Template.board.rendered = function () {
   if (! self.handle) {
     self.handle = Meteor.autorun(function () {			
 			setUpBoxes(self.node);
-			setUpSums(self.node);
 			setUpItems(self.node);				
 		});
 	}	

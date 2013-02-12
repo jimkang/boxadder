@@ -8,46 +8,6 @@ if (Meteor.isClient) {
 		return Session.get("showCreateDialog");
 	}	
 	
-	// Sum up all the items in a box
-	Template.sumContainer.sum = function()
-	{
-		var total = 0;
-
-		// 'this' is a Box model.
-		
-		// Find out which items intersect the box.
-		var boxLeft = this.x;
-		var boxRight = boxLeft + this.width;
-		var boxTop = this.y;
-		var boxBottom = boxTop + this.height;
-		
-		var items = Items.find().fetch();
-		var boxItems = _.filter(items, function(item) {
-			console.log(item);
-			var itemRight = item.x + item.width;
-			var itemBottom = item.y + item.height;
-			if ((item.x >= boxLeft) && (itemRight <= boxRight) &&
-				(item.y >= boxTop) && (itemBottom <= boxBottom))
-			{
-				return true;				
-			}
-			else
-			{
-				console.log("Not in box: " + item);
-				return false;
-			}
-		});
-		
-		if (boxItems !== undefined)
-		{
-			for (var i = 0; i < boxItems.length; ++i)
-			{
-				total += boxItems[i].score;
-			}
-		}
-		return total;
-	};
-	
   Template.box.items = function () {
 		return Items.find({ boxId: this._id });
   };
@@ -184,4 +144,42 @@ if (Meteor.isClient) {
 if (Meteor.isServer) {
   Meteor.startup(function () {
   });
+}
+
+/* Model utils */
+
+function sumForBox(box) {
+	var total = 0;
+		
+	// Find out which items intersect the box.
+	var boxLeft = box.x;
+	var boxRight = boxLeft + box.width;
+	var boxTop = box.y;
+	var boxBottom = boxTop + box.height;
+		
+	var items = Items.find().fetch();
+	var boxItems = _.filter(items, function(item) {
+		console.log(item);
+		var itemRight = item.x + item.width;
+		var itemBottom = item.y + item.height;
+		if ((item.x >= boxLeft) && (itemRight <= boxRight) &&
+			(item.y >= boxTop) && (itemBottom <= boxBottom))
+		{
+			return true;				
+		}
+		else
+		{
+			console.log("Not in box: " + item);
+			return false;
+		}
+	});
+		
+	if (boxItems !== undefined)
+	{
+		for (var i = 0; i < boxItems.length; ++i)
+		{
+			total += boxItems[i].score;
+		}
+	}
+	return total;	
 }
