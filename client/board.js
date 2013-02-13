@@ -9,7 +9,7 @@ function setD3GroupAttrsWithProplist(group, propnames) {
 	}
 	return group;
 };
-	
+
 // Drag behaviors that can be added to SVG selections.
 
 function groupdragmove(d) {
@@ -19,7 +19,7 @@ function groupdragmove(d) {
 	
   d3.selectAll(this.childNodes)
     .attr("x", function(item) { 
-			return parseInt($(this).attr("x")) + d3.event.dx;  } )
+			return parseInt($(this).attr("x")) + d3.event.dx; } )
     .attr("y", function(item) { 
 			return parseInt($(this).attr("y")) + d3.event.dy; });
 }
@@ -40,13 +40,19 @@ function saveAndRecalcOnDragStop(d) {
 	}
 	console.log("Saving " + d._id + " to: " + d.x + ", " + d.y);
 	
-	collection.update(d._id, {$set: {x: d.x, y: d.y}});
+	// Meteor.flush();
+	
+	collection.update(d._id, {$set: {x: d.x, y: d.y}}, function(error, result) {
+		if (result === null) {
+			console.log(error);
+		}
+		else {
+		}
+	});
 	
 	// Then, recalculate the sums.
-	// // Recalculate the sums.
-	// d3.selectAll(".sum").text(function (box) { 
-	// 	console.log("hi!"); return sumForBox(box); });
-// });
+	d3.selectAll(".sum").text(function (box) { return sumForBox(box); 
+	});
 }
 
 var groupdrag = d3.behavior.drag().origin(Object).on("drag", groupdragmove)
@@ -58,6 +64,9 @@ function syncCommonRectAttrs(group, cssClass) {
 	// Need to set class for CSS. Setting attr seems to clear everything 
 	// that's not explicitly set.
 	.attr("class", cssClass);
+	// .each(function(data) {
+	// 		console.log("Setting", data.title, "x to:", data.x);
+	// });
 };
 
 function positionItemLabels(group) {
@@ -68,11 +77,11 @@ function positionItemLabels(group) {
 
 /* Element set up/syncing. */
 
-function setUpBoxes(svgNode) {
+function setUpBoxes(svgNode, boxes) {
 	// Set up the <g> elements for the boxes.
   var boxGroupsSelection = 
 		d3.select(svgNode).select(".boxZone").selectAll("g .box")
-    	.data(Boxes.find().fetch(), function (box) { return box._id; });
+    	.data(boxes, function (box) { return box._id; });
 
   // Sync the <g> elements to the box records. Add the drag behavior.
 	boxGroupsSelection.enter().append("g").classed("box", true).call(groupdrag);
@@ -102,9 +111,8 @@ function setUpBoxes(svgNode) {
 	boxGroupsSelection.exit().remove();
 }
 
-function setUpItems(svgNode) {
+function setUpItems(svgNode, items) {
 	
-	var items = Items.find().fetch();
 	var itemIdFunction = function (item) { return item._id; };
 	var boxZoneSelection = d3.select(svgNode).select(".boxZone");
 	
@@ -146,16 +154,26 @@ function setUpItems(svgNode) {
 		.attr("fill", function (item) { return "white"; });			
 }
 
-/* Board renderer */
+/* Board populator */
 
 Template.board.rendered = function () {
   var self = this;
   self.node = self.find("svg");
 	
-  if (! self.handle) {
-    self.handle = Meteor.autorun(function () {			
-			setUpBoxes(self.node);
-			setUpItems(self.node);				
-		});
-	}	
+	Meteor.autorun(function(handle) {
+		var items = Items.find().fetch();
+		var boxes = Boxes.find().fetch();
+		setUpBoxes(self.node, boxes);
+		setUpItems(self.node, items);
+		
+		// The first time autorun goes, the collection isn't ready. Once it is, 
+		// stop the autorun because it will cause reloads every time a collection 
+		// is updated, and it will reload *without* the update. Not sure what's 
+		// wrong.
+		// Fortunately, there's no need yet for it reload after a drag.
+		if (items.length > 0)
+		{
+			handle.stop();
+		}
+	});
 };
