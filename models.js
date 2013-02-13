@@ -4,6 +4,12 @@
 Items = new Meteor.Collection("items");
 Boxes = new Meteor.Collection("boxes");
 
+// if (Meteor.isClient) {
+// 	Meteor.publish("allItems", function() { 
+// 		return Items.find(); 
+// 	});
+// }
+
 Boxes.allow({
   insert: function (userId, box) {
     return false; // no cowboy inserts -- use createBox method
