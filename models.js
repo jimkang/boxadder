@@ -10,6 +10,7 @@ Boxes = new Meteor.Collection("boxes");
 // 	});
 // }
 
+/*
 Boxes.allow({
   insert: function (userId, box) {
     return false; // no cowboy inserts -- use createBox method
@@ -18,11 +19,11 @@ Boxes.allow({
     return _.all(boxes, function (box) {
       if (userId !== box.owner)
         return false; // not the owner
-
+  
       var allowed = ["title", "description"];
       if (_.difference(fields, allowed).length)
         return false; // tried to write to forbidden field
-
+  
       // A good improvement would be to validate the type of the new
       // value of the field (and if a string, the length.) In the
       // future Meteor will have a schema system to makes that easier.
@@ -36,7 +37,7 @@ Boxes.allow({
     });
   }
 });
-
+*/
 
 Meteor.methods({
   // options should include: title, description
