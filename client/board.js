@@ -5,7 +5,12 @@ function setD3GroupAttrsWithProplist(group, propnames) {
 	// not just one node. Keep it in mind.
 	for (var i = 0; i < propnames.length; ++i) {
 		var propname = propnames[i];
-		group.attr(propname, function (obj) { return obj[propname]; } );
+		group.attr(propname, function (obj) { 
+			// if (propname === "x") {
+			// 	console.log("Setting", this, "x to", obj[propname]);
+			// }			
+			return obj[propname];
+		});
 	}
 	return group;
 };
@@ -51,8 +56,7 @@ function saveAndRecalcOnDragStop(d) {
 	});
 	
 	// Then, recalculate the sums.
-	d3.selectAll(".sum").text(function (box) { return sumForBox(box); 
-	});
+	d3.selectAll(".sum").text(function (box) { return sumForBox(box); });
 }
 
 var groupdrag = d3.behavior.drag().origin(Object).on("drag", groupdragmove)
@@ -69,25 +73,26 @@ function syncCommonRectAttrs(group, cssClass) {
 	// });
 };
 
-function positionItemLabels(group) {
-	setD3GroupAttrsWithProplist(group, 
-		["_id", "x", "y", "width", "height"])
-		.classed("itemLabel", true);
-};
-
 /* Element set up/syncing. */
 
-function setUpBoxes(svgNode, boxes) {
+function idFunction(obj) { return obj; }
+
+function setUpBoxes(svgNode, boxes) {	
 	// Set up the <g> elements for the boxes.
   var boxGroupsSelection = 
 		d3.select(svgNode).select(".boxZone").selectAll("g .box")
-    	.data(boxes, function (box) { return box._id; });
+    	.data(boxes, idFunction);
 
   // Sync the <g> elements to the box records. Add the drag behavior.
 	boxGroupsSelection.enter().append("g").classed("box", true).call(groupdrag);
 
 	// Set up the rect and its position and color. Append it first so that it is 
 	// the furthest back, z-order-wise.
+	
+	// We need to sync the attributes of the child rects with the data attached 
+	// to the parent g elements, so copy the data to the children.
+	var bgRectSelection = boxGroupsSelection.selectAll("rect");
+	
   syncCommonRectAttrs(boxGroupsSelection.append("rect")
 		.attr("fill", function(d) { return "white"; })
 		.attr("stroke", function (d) { return "red"; }));
@@ -109,16 +114,23 @@ function setUpBoxes(svgNode, boxes) {
 		.attr("fill", function (box) { return "white"; });
 	
 	boxGroupsSelection.exit().remove();
+	
+	makeSureItemsAreInFrontOfBoxes(svgNode);
 }
 
 function setUpItems(svgNode, items) {
-	
-	var itemIdFunction = function (item) { return item._id; };
 	var boxZoneSelection = d3.select(svgNode).select(".boxZone");
 	
 	// Sync the <g>s and the data.
+	
+	// We need to bind the data to the children of the g as well as the parent 
+	// g itself. That way we can run code that sets a child rect's attributes 
+	// using that data.
+	// To do that, the callback given to data() returns the object itself, and 
+	// data() seems to then bind to the children of the object and so on.
+	
   var itemGroupSelection = 
-		boxZoneSelection.selectAll("g .item").data(items, itemIdFunction);
+		boxZoneSelection.selectAll("g .item").data(items, idFunction);
 					
 	itemGroupSelection.enter().append("g").classed("item", true).call(groupdrag)
 	// Append the rect first so that it is the furthest back, z-order-wise.
@@ -131,7 +143,9 @@ function setUpItems(svgNode, items) {
 	itemGroupSelection.exit().remove();
 		
 	// Set up the rect and its position and color.	
-  syncCommonRectAttrs(itemGroupSelection.selectAll("rect"))
+	var bgRectSelection = itemGroupSelection.selectAll("rect");
+	
+  syncCommonRectAttrs(bgRectSelection)
 	.attr("fill", function(d) { return "blue"; });
 		
 	// Set up the title label.
@@ -151,7 +165,27 @@ function setUpItems(svgNode, items) {
 		.attr("y", function (item) { return item.y + 44/2; })
 		.attr("width", function (item) { return 100; })
 		.attr("height", function (item) { return 44; })
-		.attr("fill", function (item) { return "white"; });			
+		.attr("fill", function (item) { return "white"; });
+		
+	makeSureItemsAreInFrontOfBoxes(svgNode);
+}
+
+function makeSureItemsAreInFrontOfBoxes(svgNode) {
+	var gSelection = d3.select(svgNode).select(".boxZone").selectAll("g");
+	gSelection.sort(function(a, b) { 
+		var aIsItem = ("score" in a);
+		var bIsItem = ("score" in b);
+		if (aIsItem && bIsItem) {
+			return 0;
+		}
+		else if (aIsItem && !bIsItem) {
+			// If a is an item and be is not, it should go after it.
+			return 1;
+		}
+		else {
+			return -1;
+		}
+	});
 }
 
 /* Board populator */
@@ -159,21 +193,42 @@ function setUpItems(svgNode, items) {
 Template.board.rendered = function () {
   var self = this;
   self.node = self.find("svg");
-	
-	Meteor.autorun(function(handle) {
-		var items = Items.find().fetch();
-		var boxes = Boxes.find().fetch();
-		setUpBoxes(self.node, boxes);
-		setUpItems(self.node, items);
+
+	// The first time autorun goes, the collection isn't ready. Once it is, 
+	// stop the autorun because it will cause reloads every time a collection 
+	// is updated, and it will reload *without* the update. Not sure what's 
+	// wrong. So, we're using subscribe instead.
+
+	function redrawBoxes() {
+		var boxesContext = new Meteor.deps.Context();
+		boxesContext.on_invalidate(redrawBoxes);
+		boxesContext.run(function() {
+			var boxes = Boxes.find().fetch();
+			setUpBoxes(self.node, boxes);
+		});
+	};
+
+	function redrawItems() {
+		var itemsContext = new Meteor.deps.Context();
+		itemsContext.on_invalidate(redrawItems);
+		itemsContext.run(function() {
+			
+			var items = Items.find().fetch();
+			setUpItems(self.node, items);
+		});
+	};
 		
-		// The first time autorun goes, the collection isn't ready. Once it is, 
-		// stop the autorun because it will cause reloads every time a collection 
-		// is updated, and it will reload *without* the update. Not sure what's 
-		// wrong.
-		// Fortunately, there's no need yet for it reload after a drag.
-		if (items.length > 0)
-		{
-			handle.stop();
-		}
-	});
+  Meteor.subscribe('boxes', function() {
+		// Make sure the boxes are set up first as well as each time 
+		// they are updated.
+
+		redrawBoxes();
+				
+		// Then, set up the items. (And set them up again each time they are 
+		// updated.)
+	    Meteor.subscribe('items', function() {
+				redrawItems();
+	    });
+  });
 };
+

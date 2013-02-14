@@ -4,11 +4,12 @@
 Items = new Meteor.Collection("items");
 Boxes = new Meteor.Collection("boxes");
 
-// if (Meteor.isClient) {
-// 	Meteor.publish("allItems", function() { 
-// 		return Items.find(); 
-// 	});
-// }
+if (Meteor.isServer) {	
+	Meteor.publish("items", function() { 
+		return Items.find(); 
+	});
+	Meteor.publish("boxes", function() { return Boxes.find(); });
+}
 
 /*
 Boxes.allow({
