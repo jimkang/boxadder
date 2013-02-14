@@ -162,13 +162,12 @@ function sumForBox(box) {
 		// console.log(item);
 		var itemRight = item.x + item.width;
 		var itemBottom = item.y + item.height;
-		if ((item.x >= boxLeft) && (itemRight <= boxRight) &&
-			(item.y >= boxTop) && (itemBottom <= boxBottom))
-		{
+		// We are looking just for intersection, not containment.
+		if ((itemRight >= boxLeft) && (item.x <= boxRight) &&
+			(itemBottom >= boxTop) && (item.y <= boxBottom)) {
 			return true;				
 		}
-		else
-		{
+		else {
 			// console.log("Not in box: " + item);
 			return false;
 		}
