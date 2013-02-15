@@ -4,8 +4,8 @@ if (Meteor.isClient) {
 	  return Boxes.find({});
 	};
 	
-	Template.boxContainer.showCreateDialog = function() {
-		return Session.get("showCreateDialog");
+	Template.boxContainer.showcreateBoxDialog = function() {
+		return Session.get("showcreateBoxDialog");
 	}	
 	
   Template.box.items = function () {
@@ -70,12 +70,11 @@ if (Meteor.isClient) {
     return Session.equals("selected_item", this._id) ? "selected" : '';
   };
 	
-	Template.createDialog.events({
+	Template.createBoxDialog.events({
 	  'click .save': function (event, template) {
 	    var title = template.find(".title").value;
-	    var description = template.find(".description").value;
 
-	    if (title.length && description.length) {
+	    if (title.length) {
 				
 			  var nextBoxX = Session.get("nextBoxX");
 			  var nextBoxY = Session.get("nextBoxY");
@@ -88,15 +87,14 @@ if (Meteor.isClient) {
 				
 	      Meteor.call('createBox', {
 	        title: title,
-	        description: description,
 					x: nextBoxX, y: nextBoxY, width: 320, height: 320
 	      }, 
 				function (error, box) {
-	        if (! error) {
-						// TODO.
+	        if (!error) {						
+						makeSureItemsAreInFrontOfBoxes($('svg')[0]);
 	        }
 	      });
-	      Session.set("showCreateDialog", false);
+	      Session.set("showcreateBoxDialog", false);
 				
 				// TODO: Wrap to next row at some point.
 				Session.set("nextBoxX", nextBoxX + 64);
@@ -109,11 +107,11 @@ if (Meteor.isClient) {
 	  },
 
 	  'click .cancel': function () {
-	    Session.set("showCreateDialog", false);
+	    Session.set("showcreateBoxDialog", false);
 	  }
 	});
 
-	Template.createDialog.error = function () {
+	Template.createBoxDialog.error = function () {
 	  return Session.get("createError");
 	};
 
@@ -135,7 +133,7 @@ if (Meteor.isClient) {
 	      return;
 
 				console.log("Showing create dialog.");
-			Session.set("showCreateDialog", true);
+			Session.set("showcreateBoxDialog", true);
 	  }
 	});		
 }
