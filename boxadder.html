@@ -27,8 +27,8 @@
 
 <template name="boxContainer">
 	<p>(For now, hit reload after creating a new item. Also, you need to log in to create a new box.)</p>
-  {{#if showCreateDialog}}
-    {{> createDialog}}
+  {{#if showcreateBoxDialog}}
+    {{> createBoxDialog}}
   {{/if}}
 	
   <div style="float: right">	
@@ -77,7 +77,7 @@
   </div>
 </template>
 
-<template name="createDialog">
+<template name="createBoxDialog">
   <div class="mask"> </div>
   <div class="modal">
     <div class="modal-header">
@@ -92,9 +92,6 @@
 
       <label>Title</label>
       <input type="text" class="title span5">
-
-      <label>Description</label>
-      <textarea class="description span5"></textarea>
     </div>
 
     <div class="modal-footer">
