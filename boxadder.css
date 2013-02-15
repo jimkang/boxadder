@@ -64,3 +64,15 @@ body {
 .inc {
   cursor: pointer;
 }
+
+.modal {
+  border-style: dashed;
+  border-color: #444;
+	border-width: 2px;
+	padding: 10px 10px 10px 10px;
+	margin-bottom: 50px;
+}
+
+.modal-header button {
+	float: right;
+}
