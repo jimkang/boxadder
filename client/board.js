@@ -95,6 +95,7 @@ function setUpBoxes(svgNode, boxes) {
 	
   syncCommonRectAttrs(boxGroupsSelection.append("rect")
 		.attr("fill", function(d) { return "white"; })
+		.attr("fill-opacity", function(d) { return 0.0; })
 		.attr("stroke", function (d) { return "red"; }));
 		
 	// Add the sum box and label to the boxes.
