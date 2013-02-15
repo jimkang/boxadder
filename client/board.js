@@ -146,7 +146,8 @@ function setUpItems(svgNode, items) {
 	var bgRectSelection = itemGroupSelection.selectAll("rect");
 	
   syncCommonRectAttrs(bgRectSelection)
-	.attr("fill", function(d) { return "blue"; });
+	.attr("fill", function(d) { return "blue"; })
+	.attr("fill-opacity", function(d) { return 0.7; });
 		
 	// Set up the title label.
 	setD3GroupAttrsWithProplist(
