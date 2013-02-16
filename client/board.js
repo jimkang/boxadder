@@ -128,26 +128,32 @@ function setUpItems(svgNode, items) {
 	// g itself. That way we can run code that sets a child rect's attributes 
 	// using that data.
 	// To do that, the callback given to data() returns the object itself, and 
-	// data() seems to then bind to the children of the object and so on.
+	// data() then binds the children of the object and so on.
 	
   var itemGroupSelection = 
 		boxZoneSelection.selectAll("g .item").data(items, idFunction);
 					
 	itemGroupSelection.enter().append("g").classed("item", true).call(groupdrag)
 	// Append the rect first so that it is the furthest back, z-order-wise.
-	.call(function (groupElement) { groupElement.append("rect"); })
-	.call(function (groupElement) { 
-		groupElement.append("text").classed("itemtitle", true); })
-	.call(function (groupElement) { 
-		groupElement.append("text").classed("score", true); });
+	.call(function (groupSelection) { 
+		groupSelection.append("rect").classed("item-background") })
+	// Append the title.
+	.call(function (groupSelection) { 
+		groupSelection.append("text").classed("itemtitle", true); })
+	// Append the score label.
+	.call(function (groupSelection) { 
+		groupSelection.append("text").classed("score", true); })
+	// Append the delete button, which is defined in a <def> and instantiated
+	// with <use>.
+	.call(function (groupSelection) { groupSelection.append("use") });
 	
 	itemGroupSelection.exit().remove();
 		
 	// Set up the rect and its position and color.	
 	var bgRectSelection = itemGroupSelection.selectAll("rect");
 	
-  syncCommonRectAttrs(bgRectSelection)
-	.attr("fill", function(d) { return "blue"; })
+  syncCommonRectAttrs(bgRectSelection, "item-background")
+	.attr("fill", function(d) { return "green"; })
 	.attr("fill-opacity", function(d) { return 0.7; });
 		
 	// Set up the title label.
@@ -168,6 +174,16 @@ function setUpItems(svgNode, items) {
 		.attr("width", function (item) { return 100; })
 		.attr("height", function (item) { return 44; })
 		.attr("fill", function (item) { return "white"; });
+		
+	// Set up the delete button.
+	itemGroupSelection.selectAll("use")
+		.attr("xlink:href", "#deleteButtonPath")
+		.attr("x", function (item) { return 224 + item.x; })
+		.attr("y", function (item) { return item.y + 4; })
+		.on("click", function (d, i) {
+			// Delete this item.
+			Items.remove(d._id);
+		});
 		
 	makeSureItemsAreInFrontOfBoxes(svgNode);
 }
