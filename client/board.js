@@ -65,23 +65,20 @@ var groupdrag = d3.behavior.drag().origin(Object).on("drag", groupdragmove)
 function syncCommonRectAttrs(group, cssClass) {
 	return setD3GroupAttrsWithProplist(group, 
 		["_id", "x", "y", "width", "height"])
-	// Need to set class for CSS. Setting attr seems to clear everything 
-	// that's not explicitly set.
+	// Setting attr seems to clear everything that's not explicitly set, so we 
+	// need to re-set the class.
 	.attr("class", cssClass);
-	// .each(function(data) {
-	// 		console.log("Setting", data.title, "x to:", data.x);
-	// });
 };
 
 /* Element set up/syncing. */
 
-function idFunction(obj) { return obj; }
+function identityPassthrough(obj) { return obj; }
 
 function setUpBoxes(svgNode, boxes) {	
 	// Set up the <g> elements for the boxes.
   var boxGroupsSelection = 
 		d3.select(svgNode).select(".boxZone").selectAll("g .box")
-    	.data(boxes, idFunction);
+    	.data(boxes, identityPassthrough);
 
   // Sync the <g> elements to the box records. Add the drag behavior.
 	boxGroupsSelection.enter().append("g").classed("box", true).call(groupdrag);
@@ -119,7 +116,7 @@ function setUpBoxes(svgNode, boxes) {
 	makeSureItemsAreInFrontOfBoxes(svgNode);
 }
 
-function setUpItems(svgNode, items) {
+function syncNodesToItems(svgNode, items) {
 	var boxZoneSelection = d3.select(svgNode).select(".boxZone");
 	
 	// Sync the <g>s and the data.
@@ -131,8 +128,8 @@ function setUpItems(svgNode, items) {
 	// data() then binds the children of the object and so on.
 	
   var itemGroupSelection = 
-		boxZoneSelection.selectAll("g .item").data(items, idFunction);
-					
+		boxZoneSelection.selectAll("g .item").data(items, identityPassthrough);
+	
 	itemGroupSelection.enter().append("g").classed("item", true).call(groupdrag)
 	// Append the rect first so that it is the furthest back, z-order-wise.
 	.call(function (groupSelection) { 
@@ -148,7 +145,12 @@ function setUpItems(svgNode, items) {
 	.call(function (groupSelection) { groupSelection.append("use") });
 	
 	itemGroupSelection.exit().remove();
-		
+	
+	syncAttrsToItems(itemGroupSelection, items);
+	makeSureItemsAreInFrontOfBoxes(svgNode);	
+}
+
+function syncAttrsToItems(itemGroupSelection, items) {		
 	// Set up the rect and its position and color.	
 	var bgRectSelection = itemGroupSelection.selectAll("rect");
 	
@@ -183,9 +185,7 @@ function setUpItems(svgNode, items) {
 		.on("click", function (d, i) {
 			// Delete this item.
 			Items.remove(d._id);
-		});
-		
-	makeSureItemsAreInFrontOfBoxes(svgNode);
+		});		
 }
 
 function makeSureItemsAreInFrontOfBoxes(svgNode) {
@@ -232,7 +232,7 @@ Template.board.rendered = function () {
 		itemsContext.run(function() {
 			
 			var items = Items.find().fetch();
-			setUpItems(self.node, items);
+			syncNodesToItems(self.node, items);
 		});
 	};
 		
