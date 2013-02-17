@@ -84,3 +84,41 @@ Meteor.methods({
     });
   }
 });
+
+
+/* Model utils */
+
+function sumForBox(box) {
+	var total = 0;
+		
+	// Find out which items intersect the box.
+	var boxLeft = box.x;
+	var boxRight = boxLeft + box.width;
+	var boxTop = box.y;
+	var boxBottom = boxTop + box.height;
+		
+	var items = Items.find().fetch();
+	var boxItems = _.filter(items, function(item) {
+		// console.log(item);
+		var itemRight = item.x + item.width;
+		var itemBottom = item.y + item.height;
+		// We are looking just for intersection, not containment.
+		if ((itemRight >= boxLeft) && (item.x <= boxRight) &&
+			(itemBottom >= boxTop) && (item.y <= boxBottom)) {
+			return true;				
+		}
+		else {
+			// console.log("Not in box: " + item);
+			return false;
+		}
+	});
+		
+	if (boxItems !== undefined)
+	{
+		for (var i = 0; i < boxItems.length; ++i)
+		{
+			total += boxItems[i].score;
+		}
+	}
+	return total;	
+}

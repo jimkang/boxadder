@@ -17,7 +17,7 @@ function setD3GroupAttrsWithProplist(group, propnames) {
 
 // Drag behaviors that can be added to SVG selections.
 
-function groupdragmove(d) {
+function groupDragMove(d) {
 	d.x += d3.event.dx;
 	d.y += d3.event.dy;
 	console.log(d.x + ", " + d.y);
@@ -59,7 +59,7 @@ function saveAndRecalcOnDragStop(d) {
 	d3.selectAll(".sum").text(function (box) { return sumForBox(box); });
 }
 
-var groupdrag = d3.behavior.drag().origin(Object).on("drag", groupdragmove)
+var groupdrag = d3.behavior.drag().origin(Object).on("drag", groupDragMove)
 .on("dragend", saveAndRecalcOnDragStop);
 
 function syncCommonRectAttrs(group, cssClass) {
@@ -91,9 +91,9 @@ function setUpBoxes(svgNode, boxes) {
 	var bgRectSelection = boxGroupsSelection.selectAll("rect");
 	
   syncCommonRectAttrs(boxGroupsSelection.append("rect")
-		.attr("fill", function(d) { return "white"; })
-		.attr("fill-opacity", function(d) { return 0.0; })
-		.attr("stroke", function (d) { return "red"; }));
+	.attr("fill", function(d) { return "white"; })
+	.attr("fill-opacity", function(d) { return 0.0; })
+	.attr("stroke", function (d) { return "red"; }));
 		
 	// Add the sum box and label to the boxes.
 	boxGroupsSelection.append("rect")

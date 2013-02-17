@@ -96,7 +96,7 @@
     <input type="text" class="title" placeholder="New item" />
     <input type="text" class="description" placeholder="" />
     <input type="text" class="score" placeholder="0" />
-    <input type="button" class="add-new-item" value="Add Item" />
+    <input type="button" class="addNewItem" value="Add Item" />
   </div>
 </template>	
 
@@ -110,12 +110,12 @@
 <template name="createBoxDialog">
   <div class="mask"> </div>
   <div class="modal">
-    <div class="modal-header">
+    <div class="modalHeader">
       <button type="button" class="close cancel">&times;</button>
       <h3>Add box</h3>
     </div>
 
-    <div class="modal-body">
+    <div class="modalBody">
       {{#if error}}
         <div class="alert alert-error">{{error}}</div>
       {{/if}}
@@ -124,7 +124,7 @@
       <input type="text" class="title span5">
     </div>
 
-    <div class="modal-footer">
+    <div class="modalFooter">
       <a href="#" class="btn cancel">Cancel</a>
       <a href="#" class="btn btn-primary save">Add Box</a>
     </div>
