@@ -6,9 +6,6 @@ function setD3GroupAttrsWithProplist(group, propnames) {
 	for (var i = 0; i < propnames.length; ++i) {
 		var propname = propnames[i];
 		group.attr(propname, function (obj) { 
-			// if (propname === "x") {
-			// 	console.log("Setting", this, "x to", obj[propname]);
-			// }			
 			return obj[propname];
 		});
 	}
@@ -20,7 +17,7 @@ function setD3GroupAttrsWithProplist(group, propnames) {
 function groupDragMove(d) {
 	d.x += d3.event.dx;
 	d.y += d3.event.dy;
-	console.log(d.x + ", " + d.y);
+	// console.log(d.x + ", " + d.y);
 	
   d3.selectAll(this.childNodes)
     .attr("x", function(item) { 
@@ -212,11 +209,6 @@ Template.board.rendered = function () {
   var self = this;
   self.node = self.find("svg");
 
-	// The first time autorun goes, the collection isn't ready. Once it is, 
-	// stop the autorun because it will cause reloads every time a collection 
-	// is updated, and it will reload *without* the update. Not sure what's 
-	// wrong. So, we're using subscribe instead.
-
 	function redrawBoxes() {
 		var boxesContext = new Meteor.deps.Context();
 		boxesContext.on_invalidate(redrawBoxes);
@@ -235,6 +227,11 @@ Template.board.rendered = function () {
 			syncNodesToItems(self.node, items);
 		});
 	};
+
+	// Using subscribe instead of autorun because autorun runs the callback 
+	// when the collections are updated, but the callback seems to query
+	// collections that do *not* contain the update. Not sure what's causing this
+	// caching problem yet.
 		
   Meteor.subscribe('boxes', function() {
 		// Make sure the boxes are set up first as well as each time 
