@@ -12,52 +12,100 @@ function setD3GroupAttrsWithProplist(group, propnames) {
 	return group;
 };
 
-// Drag behaviors that can be added to SVG selections.
-
-function groupDragMove(d) {
-	d.x += d3.event.dx;
-	d.y += d3.event.dy;
-	// console.log(d.x + ", " + d.y);
+function syncDatumToCollection(datum, fieldArray, collection) {
+	// console.log("Saving", positionData._id, "to:", positionData.x, positionData.y);
 	
-  d3.selectAll(this.childNodes)
-    .attr("x", function(item) { 
-			return parseInt($(this).attr("x")) + d3.event.dx; } )
-    .attr("y", function(item) { 
-			return parseInt($(this).attr("y")) + d3.event.dy; });
-}
-
-function saveAndRecalcOnDragStop(d) {
-	// First, commit the changes to what was dragged.
-	
-	// TODO: Might be a neater way to do this.	
-	var collection = null;
-	var className = $(this).attr('class');
-	if (className == 'item')
-	{
-		collection = Items;
+	var updateDict = {};
+	for (var i = 0; i < fieldArray.length; ++i) {
+		updateDict[fieldArray[i]] = datum[fieldArray[i]];
 	}
-	else if (className == 'box')
-	{
-		collection = Boxes;
-	}
-	console.log("Saving " + d._id + " to: " + d.x + ", " + d.y);
 	
 	// Meteor.flush();
 	
-	collection.update(d._id, {$set: {x: d.x, y: d.y}}, function(error, result) {
-		if (result === null) {
-			console.log(error);
-		}
-		else {
-		}
-	});
-	
-	// Then, recalculate the sums.
-	d3.selectAll(".sum").text(function (box) { return sumForBox(box); });
+	collection.update(datum._id, {$set: updateDict}, 
+		function(error, result) {
+			if (result === null) {
+				console.log(error);
+			}
+			else {
+			}
+		});	
 }
 
-var groupdrag = d3.behavior.drag().origin(Object).on("drag", groupDragMove)
-.on("dragend", saveAndRecalcOnDragStop);
+// Drag behaviors that can be added to SVG selections.
+
+var Dragger = {
+	// Members to keep track of the change across the current drag.
+	currentDragChangeX: 0,
+	currentDragChangeY: 0,
+	
+	resetDragChange: function() {
+		Dragger.currentDragChangeX = 0;
+		Dragger.currentDragChangeY = 0;
+	},
+	
+	updateDragChangeWithD3Event: function() {
+		Dragger.currentDragChangeX += d3.event.dx;
+		Dragger.currentDragChangeY += d3.event.dy;		
+	},
+	
+	// A method to provide to the d3 drag behavior to run when something is
+	// dragged.
+	groupDragMove: function(d) {
+		Dragger.updateDragChangeWithD3Event();
+		
+		d.x += d3.event.dx;
+		d.y += d3.event.dy;
+		// console.log(d.x + ", " + d.y);	
+	
+	  d3.selectAll(this.childNodes)
+	    .attr("x", function(item) {
+				return parseInt($(this).attr("x")) + d3.event.dx; })
+	    .attr("y", function(item) { 
+				return parseInt($(this).attr("y")) + d3.event.dy; });		
+	},
+
+	saveAndRecalcOnDragStop: function(d) {
+
+		// Do this work only if there was an actual change. A drag can end with 
+		// 0 movement in both dimensions.
+		if ((Dragger.currentDragChangeX === 0) && 
+			(Dragger.currentDragChangeY === 0)) {
+			return;
+		}		
+		Dragger.resetDragChange();
+		
+		// First, commit the changes to what was dragged.
+		console.log("saveAndRecalcOnDragStop change:", Dragger.currentDragChangeX, 
+			Dragger.currentDragChangeY);
+
+		// Figure out appropriate collection to update.
+		var collection = null;
+		var className = $(this).attr('class');
+		if (className == 'item') {
+			collection = Items;
+		}
+		else if (className == 'box') {
+			collection = Boxes;
+		}
+
+		syncDatumToCollection(d, ['x', 'y'], collection);
+	
+		// Then, recalculate the sums.
+		d3.selectAll(".sum").text(function (box) { return sumForBox(box); });
+	},
+	
+	// dragStarted: function(d) {
+	// 	console.log("dragStarted at: " + d3)
+	// },
+	
+	// enableSaving: true
+};
+
+var groupDrag = d3.behavior.drag().origin(Object)
+.on("drag", Dragger.groupDragMove)
+// .on("dragstart", Dragger.dragStarted);
+.on("dragend", Dragger.saveAndRecalcOnDragStop);
 
 function syncCommonRectAttrs(group, cssClass) {
 	return setD3GroupAttrsWithProplist(group, 
@@ -66,6 +114,93 @@ function syncCommonRectAttrs(group, cssClass) {
 	// need to re-set the class.
 	.attr("class", cssClass);
 };
+
+/* Editable svg code */
+
+// This is https://gist.github.com/GerHobbelt/2653660 with a few changes.
+
+// onSetFieldFunction shoul a data param.
+function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
+{ 
+    this
+      .on("mouseover", function() {
+        d3.select(this).style("fill", "red");
+      })
+      .on("mouseout", function() {
+        d3.select(this).style("fill", null);
+      })
+      .on("click", function(d) {
+        console.log("editable", this);
+
+        var p = this.parentNode;
+ 
+        // Inject a HTML form to edit the content here.
+ 
+        var el = d3.select(this);
+        var p_el = d3.select(p);
+ 
+        var frm = p_el.append("foreignObject");
+ 
+        var inp = frm
+        .attr("x", parseInt(el.attr('x')) + formXOffset)
+        .attr("y", parseInt(el.attr('y')) - parseInt((el.attr('height'))/2))
+        .attr("width", el.attr('width'))
+        .attr("height", el.attr('height'))
+        .append("xhtml:form")
+          .append("input")
+            .attr("value", function() {
+              // nasty spot to place this call, but here we are sure that the <input> tag is available
+              // and is handily pointed at by 'this':
+              this.focus();
+ 
+              return d[field];
+            })
+						.attr("style", "text-align:center;")
+            // make the form go away when you jump out (form loses focus) 
+						// or hit ENTER:
+            .on("blur", function() {
+              console.log("blur", this, arguments);
+ 
+              var txt = inp.node().value;
+ 
+              d[field] = txt;
+							onSetFieldFunction(d);
+              el.text(function(d) { return d[field]; });
+ 
+              // Note to self: frm.remove() will remove the entire <g> group!
+							// Remember the D3 selection logic!
+              p_el.select("foreignObject").remove();
+            })
+            .on("keypress", function() {
+                console.log("keypress", this, arguments);
+ 
+              // IE fix
+              if (!d3.event)
+                  d3.event = window.event;
+ 
+              var e = d3.event;
+              if (e.keyCode == 13)
+              {
+                  if (typeof(e.cancelBubble) !== 'undefined') // IE
+                    e.cancelBubble = true;
+                  if (e.stopPropagation)
+                    e.stopPropagation();
+                  e.preventDefault();
+ 
+                  var txt = inp.node().value;
+ 
+                  d[field] = txt;
+									onSetFieldFunction(d);
+                  el.text(function(d) { return d[field]; });
+ 
+                  // odd. Should work in Safari, but the debugger crashes on this instead.
+                  // Anyway, it SHOULD be here and it doesn't hurt otherwise.
+                  p_el.select("foreignObject").remove();
+                }
+            })
+						.attr("size", inputSize);
+      });
+}
 
 /* Element set up/syncing. */
 
@@ -78,7 +213,7 @@ function setUpBoxes(svgNode, boxes) {
     	.data(boxes, identityPassthrough);
 
   // Sync the <g> elements to the box records. Add the drag behavior.
-	boxGroupsSelection.enter().append("g").classed("box", true).call(groupdrag);
+	boxGroupsSelection.enter().append("g").classed("box", true).call(groupDrag);
 
 	// Set up the rect and its position and color. Append it first so that it is 
 	// the furthest back, z-order-wise.
@@ -127,16 +262,21 @@ function syncNodesToItems(svgNode, items) {
   var itemGroupSelection = 
 		boxZoneSelection.selectAll("g .item").data(items, identityPassthrough);
 	
-	itemGroupSelection.enter().append("g").classed("item", true).call(groupdrag)
+	itemGroupSelection.enter().append("g").classed("item", true)
+	// Add the dragging handler.
+	.call(groupDrag)
 	// Append the rect first so that it is the furthest back, z-order-wise.
 	.call(function (groupSelection) { 
-		groupSelection.append("rect").classed("item-background") })
+		groupSelection.append("rect").classed("item-background") 
+	})
 	// Append the title.
 	.call(function (groupSelection) { 
-		groupSelection.append("text").classed("itemtitle", true); })
+		groupSelection.append("text").classed("itemtitle", true); 
+	})
 	// Append the score label.
 	.call(function (groupSelection) { 
-		groupSelection.append("text").classed("score", true); })
+		groupSelection.append("text").classed("score", true); 
+	})
 	// Append the delete button, which is defined in a <def> and instantiated
 	// with <use>.
 	.call(function (groupSelection) { groupSelection.append("use") });
@@ -160,10 +300,9 @@ function syncAttrsToItems(itemGroupSelection, items) {
 		// d3 selectors are slightly different from jQuery's: No spaces for 
 		// multiple specifiers that are to be ANDed.
 		itemGroupSelection.selectAll("text.itemtitle")
-		.text(function (d) { return d.title; }), 
-		["x", "width", "height"])
-		.attr("y", function (item) { return item.y + 44/2; })
-		.attr("fill", function (item) { return "white"; });
+		.text(function (d) { return d.title; }), ["x", "width", "height"])
+	.attr("y", function (item) { return item.y + 44/2; })
+	.attr("fill", function (item) { return "white"; });
 		
 	// Set up the score field.
 	itemGroupSelection.selectAll("text.score")
@@ -172,7 +311,12 @@ function syncAttrsToItems(itemGroupSelection, items) {
 		.attr("y", function (item) { return item.y + 44/2; })
 		.attr("width", function (item) { return 100; })
 		.attr("height", function (item) { return 44; })
-		.attr("fill", function (item) { return "white"; });
+		.attr("fill", function (item) { return "white"; })
+		.call(makeEditable, "score", 4, -18, function (d) {
+			// When the field is set, update the collection containing the data.
+			console.log("Saving score:", d.score);
+			syncDatumToCollection(d, ['score'], Items);
+		});
 		
 	// Set up the delete button.
 	itemGroupSelection.selectAll("use")
