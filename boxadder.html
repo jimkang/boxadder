@@ -56,7 +56,7 @@
 </template>
 
 <template name="boxContainer">
-	<p>(For now, hit reload after creating a new item. Also, you need to log in to create a new box.)</p>
+	<p>(You need to log in to create a new box.)</p>
   {{#if showcreateBoxDialog}}
     {{> createBoxDialog}}
   {{/if}}
@@ -93,19 +93,9 @@
 
 <template name="addItem">
   <div id="new-item-box">
-    <input type="text" class="title" placeholder="New item" />
-    <input type="text" class="description" placeholder="" />
-    <input type="text" class="score" placeholder="0" />
     <input type="button" class="addNewItem" value="Add Item" />
   </div>
 </template>	
-
-<template name="item">
-  <div class="item {{selected}}">
-    <label class="name">{{title}}</label>
-    <input class="score" size="3" value="{{score}}"></input>
-  </div>
-</template>
 
 <template name="createBoxDialog">
   <div class="mask"> </div>

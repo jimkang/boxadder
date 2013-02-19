@@ -19,56 +19,47 @@ if (Meteor.isClient) {
 	
   Template.addItem.events({
 		'click .addNewItem': function (event, template) {
-				var spaceBetweenItems = 52;
-		    var title = template.find("#new-item-box .title").value;
-		    var description = template.find("#new-item-box .description").value;
-		    var score = parseInt(template.find("#new-item-box .score").value);
-			
-			  var nextItemX = Session.get("nextItemX");
-			  var nextItemY = Session.get("nextItemY");
+			var spaceBetweenItems = 50;
+		  var nextItemX = Session.get("nextItemX");
+		  var nextItemY = Session.get("nextItemY");
 
-				if (nextItemX === undefined) {
-					nextItemX = 0;
-				}
-				if (nextItemY === undefined) {
-					// Find the item with the greatest y and then add the offset.
-					nextItemY = 0;
-					var items = Items.find().fetch();
-					if (items.length > 0)
-					{
-						var bottomMostItem = _.reduce(items, 
-							function(memo, num) { 
-									console.log(memo);
-									return (num.y > memo.y) ? num : memo; 
-								}, 
-								items[0]);
+			if (nextItemX === undefined) {
+				nextItemX = 0;
+			}
+			if (nextItemY === undefined) {
+				// Find the item with the greatest y and then add the offset.
+				nextItemY = 0;
+				var items = Items.find().fetch();
+				if (items.length > 0)
+				{
+					var bottomMostItem = _.reduce(items, 
+						function(memo, num) { 
+								console.log(memo);
+								return (num.y > memo.y) ? num : memo; 
+							}, 
+							items[0]);
 						
-						nextItemY = bottomMostItem.y;
-						console.log(nextItemY);
-					}
+					nextItemY = bottomMostItem.y;
+					console.log(nextItemY);
 				}
+			}
 				
-				console.log("Final nextItemY: " + nextItemY);
-	      Meteor.call('createItem', {
-	        title: title,
-	        description: description,
-					score: score,
-					x: nextItemX, y: nextItemY, width: 240, height: 44
-	      }, 
-				function (error, box) {
-	        if (! error) {
-						// TODO.
-	        }
-	      });
+			console.log("Final nextItemY: " + nextItemY);
+      Meteor.call('createItem', {
+        title: "New Item",
+				score: 0,
+				x: nextItemX, y: nextItemY, width: 240, height: 44
+      }, 
+			function (error, box) {
+        if (! error) {
+					// TODO.
+        }
+      });
 				
-				Session.set("nextItemX", nextItemX);
-				Session.set("nextItemY", nextItemY + spaceBetweenItems);
+			Session.set("nextItemX", nextItemX);
+			Session.set("nextItemY", nextItemY + spaceBetweenItems);
 		}
-	});	
-
-  Template.item.selected = function () {
-    return Session.equals("selected_item", this._id) ? "selected" : '';
-  };
+	});
 	
 	Template.createBoxDialog.events({
 	  'click .save': function (event, template) {
@@ -114,18 +105,6 @@ if (Meteor.isClient) {
 	Template.createBoxDialog.error = function () {
 	  return Session.get("createError");
 	};
-
-  Template.item.events({
-    'click input.inc': function () {
-      items.update(Session.get("selected_item"), {$inc: {score: 5}});
-    },		
-    'click': function () {
-      Session.set("selected_item", this._id);
-    },
-    'keyup input': function (evt) {
-			// .sum = Template.box.calculateSum();
-    }
-  });
 	
 	Template.newBoxButton.events({
 	  'click': function (event, template) {
