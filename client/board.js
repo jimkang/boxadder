@@ -227,7 +227,12 @@ function syncAttrsToItems(itemGroupSelection, items) {
 		itemGroupSelection.selectAll("text.itemtitle")
 		.text(function (d) { return d.title; }), ["x", "width", "height"])
 	.attr("y", function (item) { return item.y + 44/2; })
-	.attr("fill", function (item) { return "white"; });
+	.attr("fill", function (item) { return "white"; })
+	.call(makeEditable, "title", 20, 0, function (d) {
+		// When the field is set, update the collection containing the data.
+		console.log("Saving title:", d.title);
+		syncDatumToCollection(d, ['title'], Items, identityPassthrough);
+	});
 		
 	// Set up the score field.
 	itemGroupSelection.selectAll("text.score")
