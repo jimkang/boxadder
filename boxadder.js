@@ -59,14 +59,13 @@ if (Meteor.isClient) {
 			Session.set("nextItemX", nextItemX);
 			Session.set("nextItemY", nextItemY + spaceBetweenItems);
 		}
-	});
+	});	
 	
-	Template.createBoxDialog.events({
-	  'click .save': function (event, template) {
-	    var title = template.find(".title").value;
+	Template.newBoxButton.events({
+	  'click': function (event, template) {
+	    if (! Meteor.userId()) // must be logged in to create boxes
+	      return;
 
-	    if (title.length) {
-				
 			  var nextBoxX = Session.get("nextBoxX");
 			  var nextBoxY = Session.get("nextBoxY");
 				if (nextBoxX === undefined) {
@@ -77,7 +76,7 @@ if (Meteor.isClient) {
 				}
 				
 	      Meteor.call('createBox', {
-	        title: title,
+	        title: "New Box",
 					x: nextBoxX, y: nextBoxY, width: 320, height: 320
 	      }, 
 				function (error, box) {
@@ -90,29 +89,6 @@ if (Meteor.isClient) {
 				// TODO: Wrap to next row at some point.
 				Session.set("nextBoxX", nextBoxX + 64);
 				Session.set("nextBoxY", nextBoxY + 64);
-				
-	    } else {
-	      Session.set("createError",
-	                  "It needs a title and a description, or why bother?");
-	    }
-	  },
-
-	  'click .cancel': function () {
-	    Session.set("showcreateBoxDialog", false);
-	  }
-	});
-
-	Template.createBoxDialog.error = function () {
-	  return Session.get("createError");
-	};
-	
-	Template.newBoxButton.events({
-	  'click': function (event, template) {
-	    if (! Meteor.userId()) // must be logged in to create boxes
-	      return;
-
-				console.log("Showing create dialog.");
-			Session.set("showcreateBoxDialog", true);
 	  }
 	});		
 }
