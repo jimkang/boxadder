@@ -105,10 +105,10 @@ var Dragger = {
 	// enableSaving: true
 };
 
-var groupDrag = d3.behavior.drag().origin(Object)
-.on("drag", Dragger.groupDragMove)
-// .on("dragstart", Dragger.dragStarted);
-.on("dragend", Dragger.saveAndRecalcOnDragStop);
+var addGroupDragBehavior = d3.behavior.drag().origin(Object)
+	.on("drag", Dragger.groupDragMove)
+	// .on("dragstart", Dragger.dragStarted);
+	.on("dragend", Dragger.saveAndRecalcOnDragStop);
 
 function syncCommonRectAttrs(group, cssClass) {
 	return setD3GroupAttrsWithProplist(group, 
@@ -216,7 +216,8 @@ function setUpBoxes(svgNode, boxes) {
     	.data(boxes, identityPassthrough);
 
   // Sync the <g> elements to the box records. Add the drag behavior.
-	boxGroupsSelection.enter().append("g").classed("box", true).call(groupDrag);
+	boxGroupsSelection.enter().append("g").classed("box", true)
+	.call(addGroupDragBehavior);
 
 	// Set up the rect and its position and color. Append it first so that it is 
 	// the furthest back, z-order-wise.
@@ -267,7 +268,7 @@ function syncNodesToItems(svgNode, items) {
 	
 	itemGroupSelection.enter().append("g").classed("item", true)
 	// Add the dragging handler.
-	.call(groupDrag)
+	.call(addGroupDragBehavior)
 	// Append the rect first so that it is the furthest back, z-order-wise.
 	.call(function (groupSelection) { 
 		groupSelection.append("rect").classed("item-background") 
