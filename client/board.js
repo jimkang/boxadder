@@ -75,13 +75,7 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
         .attr("height", el.attr('height'))
         .append("xhtml:form")
           .append("input")
-            .attr("value", function() {
-              // nasty spot to place this call, but here we are sure that the <input> tag is available
-              // and is handily pointed at by 'this':
-              this.focus();
- 
-              return d[field];
-            })
+            .attr("value", function() { return d[field]; })
 						.attr("style", "text-align:center;")
             // make the form go away when you jump out (form loses focus) 
 						// or hit ENTER:
@@ -125,11 +119,14 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
                   p_el.select("foreignObject").remove();
                 }
             })
-						.attr("size", inputSize);
+						.attr("size", inputSize)
+						// It's important to call focus *after* the value is set. This way,
+						// the value text gets highlighted.
+						.each(function() { this.focus(); });
       });
 }
 
-/* Element set up/syncing. */
+/* Element set up. */
 
 function identityPassthrough(obj) { return obj; }
 
