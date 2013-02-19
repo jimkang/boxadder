@@ -12,12 +12,14 @@ function setD3GroupAttrsWithProplist(group, propnames) {
 	return group;
 };
 
-function syncDatumToCollection(datum, fieldArray, collection) {
+// valueCleaner is a function that takes a value and returns it cleaned, if 
+// necessary.
+function syncDatumToCollection(datum, fieldArray, collection, valueCleaner) {
 	// console.log("Saving", positionData._id, "to:", positionData.x, positionData.y);
 	
 	var updateDict = {};
 	for (var i = 0; i < fieldArray.length; ++i) {
-		updateDict[fieldArray[i]] = datum[fieldArray[i]];
+		updateDict[fieldArray[i]] = valueCleaner(datum[fieldArray[i]]);
 	}
 	
 	// Meteor.flush();
@@ -89,7 +91,8 @@ var Dragger = {
 			collection = Boxes;
 		}
 
-		syncDatumToCollection(d, ['x', 'y'], collection);
+		syncDatumToCollection(d, ['x', 'y'], collection, 
+			function(val) { return parseInt(val); });
 	
 		// Then, recalculate the sums.
 		d3.selectAll(".sum").text(function (box) { return sumForBox(box); });
@@ -315,7 +318,8 @@ function syncAttrsToItems(itemGroupSelection, items) {
 		.call(makeEditable, "score", 4, -18, function (d) {
 			// When the field is set, update the collection containing the data.
 			console.log("Saving score:", d.score);
-			syncDatumToCollection(d, ['score'], Items);
+			syncDatumToCollection(d, ['score'], Items, 
+				function(val) { return parseInt(val); });
 		});
 		
 	// Set up the delete button.
