@@ -3,12 +3,16 @@
 
 Items = new Meteor.Collection("items");
 Boxes = new Meteor.Collection("boxes");
+Boards = new Meteor.Collection("boards");
 
 if (Meteor.isServer) {	
-	Meteor.publish("items", function() { 
-		return Items.find(); 
+	Meteor.publish("items", function(params) { 
+		return Items.find({ board: params.boardId }); 
 	});
-	Meteor.publish("boxes", function() { return Boxes.find(); });
+	Meteor.publish("boxes", function(params) { 
+		return Boxes.find({ board: params.boardId });
+	});
+	Meteor.publish("boards", function() { return Boards.find(); });
 }
 
 /*
