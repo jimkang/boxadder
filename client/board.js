@@ -289,17 +289,20 @@ Template.board.rendered = function () {
 		boxesContext.on_invalidate(redrawBoxes);
 		boxesContext.run(function() {
 			var boxes = Boxes.find().fetch();
-			setUpBoxes(self.node, boxes);
+			if (boxes.length > 0) {
+				setUpBoxes(self.node, boxes);
+			}
 		});
 	};
 
 	function redrawItems() {
 		var itemsContext = new Meteor.deps.Context();
 		itemsContext.on_invalidate(redrawItems);
-		itemsContext.run(function() {
-			
+		itemsContext.run(function() {			
 			var items = Items.find().fetch();
-			syncNodesToItems(self.node, items);
+			if (items.length > 0) {
+				syncNodesToItems(self.node, items);
+			}
 		});
 	};
 
@@ -307,18 +310,22 @@ Template.board.rendered = function () {
 	// when the collections are updated, but the callback seems to query
 	// collections that do *not* contain the update. Not sure what's causing this
 	// caching problem yet.
-		
-  Meteor.subscribe('boxes', function() {
-		// Make sure the boxes are set up first as well as each time 
-		// they are updated.
+	
+	Session.set("currentBoard", "b898820f-48e5-4221-a440-e218d825c578");
 
-		redrawBoxes();
+  Meteor.subscribe('boards', function() {		
+	  Meteor.subscribe('boxes', {boardId: Session.get("currentBoard")}, function() {
+			// Make sure the boxes are set up first as well as each time 
+			// they are updated.
+
+			redrawBoxes();
 				
-		// Then, set up the items. (And set them up again each time they are 
-		// updated.)
-	    Meteor.subscribe('items', function() {
+			// Then, set up the items. (And set them up again each time they are 
+			// updated.)
+	    Meteor.subscribe('items', {boardId: Session.get("currentBoard")}, function() {
 				redrawItems();
 	    });
-  });
+	  });
+	});
 };
 
