@@ -5,10 +5,14 @@
 <body>
 	
   <div id="outer">		
-		{{> newBoxButton }}
+	  <div style="float: right">	
+			{{loginButtons align="right"}}
+		</div>
 		
-		{{> boxContainer }}
-		
+		{{> addBoard }}
+		{{> addBox }}
+		{{> addItem }}
+				
 		{{> board }}
   </div>
 </body>
@@ -56,21 +60,9 @@
 </template>
 
 <template name="boxContainer">
-	<p>(You need to log in to create a new box.)</p>
-	
-  <div style="float: right">	
-		{{loginButtons align="right"}}
-	</div>
+	<p>(You need to log in to add a box.)</p>
 		
 	<div class="boxContainer">
-		{{> addItem }}
-	  {{#each boxes}}
-			{{! The box template object's methods will be executed in such a context
-				that all of the Box model's properties, like _id and description, will 
-				be available via this. Not sure why yet.
-			}}
-			{{> box }}
-		{{/each}}	
 	</div>
 </template>
 
@@ -94,8 +86,49 @@
   </div>
 </template>	
 
-<template name="newBoxButton">
+<template name="addBox">
 	<div>
-		<button type="button" class="close cancel">New Box</button>
+		<button type="button" class="close cancel">Add Box</button>
 	</div>
+</template>
+
+<template name="addBoard">
+	<div>
+		<button type="button" class="addBoard">Add Board</button>
+	</div>
+  {{#if showNewBoardDialog}}
+    {{> newBoardDialog}}
+  {{/if}}	
+</template>
+
+<template name="newBoardDialog">
+  <div class="mask"> </div>
+  <div class="modal">
+    <div class="modal-header">
+      <button type="button" class="close cancel">&times;</button>
+      <h3>Add party</h3>
+    </div>
+
+    <div class="modal-body">
+      {{#if error}}
+        <div class="alert alert-error">{{error}}</div>
+      {{/if}}
+
+      <label>Title</label>
+      <input type="text" class="title span5">
+
+      <label>Description</label>
+      <textarea class="description span5"></textarea>
+
+      <label class="checkbox">
+        <input type="checkbox" class="private">
+        Private party &mdash; invitees only
+      </label>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn cancel">Cancel</a>
+      <a href="#" class="btn btn-primary save">Add party</a>
+    </div>
+  </div>
 </template>
