@@ -1,20 +1,3 @@
-Template.boxContainer.boxes = function () {
-  return Boxes.find({});
-};
-	
-Template.boxContainer.showcreateBoxDialog = function() {
-	return Session.get("showcreateBoxDialog");
-}	
-	
-Template.box.items = function () {
-	return Items.find({ boxId: this._id });
-};
-
-Template.box.selected_name = function () {
-  var item = Items.findOne(Session.get("selected_item"));
-  return item && item.name;
-};
-	
 Template.addItem.events({
 	'click .addNewItem': function (event, template) {
 		var spaceBetweenItems = 50;
