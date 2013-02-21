@@ -45,12 +45,38 @@ Boxes.allow({
 */
 
 Meteor.methods({
-  // options should include: title, description
+	createBoard: function(options) {
+    options = options || {};
+    if (!(typeof options.name === "string" && options.name.length &&
+				 typeof options.publiclyReadable === "boolean" &&
+				 typeof options.publiclyWritable === "boolean" &&
+				 Array.isArray(options.usersThatCanRead) && 
+				 (options.usersThatCanRead.length > 0) &&
+				 Array.isArray(options.usersThatCanWrite) && 
+				 (options.usersThatCanWrite.length > 0))) {
+      throw new Meteor.Error(400, "Required parameter missing");
+		}
+    if (options.name.length > 100)
+      throw new Meteor.Error(413, "Name too long");
+    if (! this.userId)
+      throw new Meteor.Error(403, "You must be logged in");
+
+    return Boards.insert({
+      owner: this.userId,
+			name: options.name, 
+			publiclyReadable: options.publiclyReadable, 
+			publiclyWritable: options.publiclyWritable, 
+			usersThatCanRead: options.usersThatCanRead, 
+			usersThatCanWrite: options.usersThatCanWrite
+		});		
+	},
+
   createBox: function (options) {
     options = options || {};
     if (! (typeof options.title === "string" && options.title.length &&
 					 typeof options.x === "number" && typeof options.y === "number" &&
-					 typeof options.width === "number" && typeof options.height === "number"))
+					 typeof options.width === "number" && typeof options.height === "number" &&
+					 typeof options.board === "string" && options.board.length))
       throw new Meteor.Error(400, "Required parameter missing");
     if (options.title.length > 100)
       throw new Meteor.Error(413, "Title too long");
@@ -59,6 +85,7 @@ Meteor.methods({
 
     return Boxes.insert({
       owner: this.userId,
+			board: options.board,
       title: options.title,
 			x: options.x,
 			y: options.y,
@@ -71,12 +98,14 @@ Meteor.methods({
     if (! (typeof options.score === "number" && options.title.length &&
 					 typeof options.x === "number" && typeof options.y === "number" &&
 					 typeof options.width === "number" && 
-					 typeof options.height === "number"))
+					 typeof options.height === "number" &&
+					 typeof options.board === "string" && options.board.length))
       throw new Meteor.Error(400, "Required parameter missing");
     if (! this.userId)
       throw new Meteor.Error(403, "You must be logged in");
 
     return Items.insert({
+			board: options.board,
       title: options.title,
 			score: options.score,
       description: options.description,

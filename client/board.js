@@ -130,7 +130,7 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
 
 function identityPassthrough(obj) { return obj; }
 
-function setUpBoxes(svgNode, boxes) {	
+function syncNodesToBoxes(svgNode, boxes) {	
 	// Set up the <g> elements for the boxes.
   var boxGroupsSelection = 
 		d3.select(svgNode).select(".boxZone").selectAll("g .box")
@@ -191,8 +191,9 @@ function syncNodesToItems(svgNode, items) {
 	// Add the dragging handler.
 	.call(addGroupDragBehavior)
 	// Append the rect first so that it is the furthest back, z-order-wise.
-	.call(function (groupSelection) { 
-		groupSelection.append("rect").classed("item-background") 
+	.call(function (groupSelection) {
+		var appendedSelection = groupSelection.append("rect")
+		.classed("item-background", true);
 	})
 	// Append the title.
 	.call(function (groupSelection) { 
@@ -289,9 +290,7 @@ Template.board.rendered = function () {
 		boxesContext.on_invalidate(redrawBoxes);
 		boxesContext.run(function() {
 			var boxes = Boxes.find().fetch();
-			if (boxes.length > 0) {
-				setUpBoxes(self.node, boxes);
-			}
+			syncNodesToBoxes(self.node, boxes);
 		});
 	};
 
@@ -300,32 +299,25 @@ Template.board.rendered = function () {
 		itemsContext.on_invalidate(redrawItems);
 		itemsContext.run(function() {			
 			var items = Items.find().fetch();
-			if (items.length > 0) {
-				syncNodesToItems(self.node, items);
-			}
+			syncNodesToItems(self.node, items);
 		});
 	};
 
-	// Using subscribe instead of autorun because autorun runs the callback 
-	// when the collections are updated, but the callback seems to query
-	// collections that do *not* contain the update. Not sure what's causing this
-	// caching problem yet.
-	
-	Session.set("currentBoard", "b898820f-48e5-4221-a440-e218d825c578");
-
-  Meteor.subscribe('boards', function() {		
+	Meteor.autorun(function() {
+		// This subscription keeps the board list, which also uses the boards
+		// collection, updated reactively.
+	  Meteor.subscribe('boards', {boardId: Session.get("currentBoard")});
+		
 	  Meteor.subscribe('boxes', {boardId: Session.get("currentBoard")}, function() {
-			// Make sure the boxes are set up first as well as each time 
-			// they are updated.
-
+			// Set up the boxes.
 			redrawBoxes();
-				
-			// Then, set up the items. (And set them up again each time they are 
-			// updated.)
-	    Meteor.subscribe('items', {boardId: Session.get("currentBoard")}, function() {
-				redrawItems();
-	    });
-	  });
+    });	
+			
+		// Set up the items. (And set them up again each time they or the current
+		// board are updated.)
+    Meteor.subscribe('items', {boardId: Session.get("currentBoard")}, function() {
+			console.log("items or session changed.");
+			redrawItems();			
+		});
 	});
 };
-

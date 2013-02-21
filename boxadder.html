@@ -8,7 +8,8 @@
 	  <div style="float: right">	
 			{{loginButtons align="right"}}
 		</div>
-		
+
+		{{> boardList }}
 		{{> addBoard }}
 		{{> addBox }}
 		{{> addItem }}
@@ -91,29 +92,40 @@
   <div class="modal">
     <div class="modal-header">
       <button type="button" class="close cancel">&times;</button>
-      <h3>Add party</h3>
     </div>
 
     <div class="modal-body">
       {{#if error}}
         <div class="alert alert-error">{{error}}</div>
       {{/if}}
+			
+			<form name="newBoardForm">
+	      <label>Name</label>
+	      <input type="text" class="newBoardName span5">
 
-      <label>Title</label>
-      <input type="text" class="title span5">
+	      <label>Anyone can see it</label>
+	      <input type="checkbox" name="publiclyReadable" 
+				class="publiclyReadable" />
 
-      <label>Description</label>
-      <textarea class="description span5"></textarea>
-
-      <label class="checkbox">
-        <input type="checkbox" class="private">
-        Private party &mdash; invitees only
-      </label>
+	      <label>Anyone can change it</label>
+	      <input type="checkbox" name="publiclyWritable"
+				class="publiclyWritable"/>
+			</form>
     </div>
 
     <div class="modal-footer">
       <a href="#" class="btn cancel">Cancel</a>
-      <a href="#" class="btn btn-primary save">Add party</a>
+      <a href="#" class="btn btn-primary save">Add</a>
     </div>
   </div>
+</template>
+
+<template name="boardList">
+	<div id="boardList">
+		{{#each boards}}
+			<div class="boardListItem">
+				{{name}}
+			</div>
+		{{/each}}
+	</div>
 </template>

@@ -24,12 +24,17 @@ Template.addItem.events({
 				console.log(nextItemY);
 			}
 		}
+
+		// TODO: Put them somewhere other than 0, 0.
+	  var nextItemX = 0;
+	  var nextItemY = 0;
 				
 		console.log("Final nextItemY: " + nextItemY);
     Meteor.call('createItem', {
       title: "New Item",
 			score: 0,
-			x: nextItemX, y: nextItemY, width: 240, height: 44
+			x: nextItemX, y: nextItemY, width: 240, height: 44,
+			board: Session.get("currentBoard")
     }, 
 		function (error, box) {
       if (! error) {
@@ -47,8 +52,9 @@ Template.addBox.events({
     if (! Meteor.userId()) // must be logged in to create boxes
       return;
 
-		  var nextBoxX = Session.get("nextBoxX");
-		  var nextBoxY = Session.get("nextBoxY");
+			// TODO: Put them somewhere other than 0, 0.
+		  var nextBoxX = 0;
+		  var nextBoxY = 0;
 			if (nextBoxX === undefined) {
 				nextBoxX = 0;
 			}
@@ -58,14 +64,14 @@ Template.addBox.events({
 				
       Meteor.call('createBox', {
         title: "New Box",
-				x: nextBoxX, y: nextBoxY, width: 320, height: 320
+				x: nextBoxX, y: nextBoxY, width: 320, height: 320, 
+				board: Session.get("currentBoard")
       }, 
 			function (error, box) {
         if (!error) {						
 					makeSureItemsAreInFrontOfBoxes($('svg')[0]);
         }
       });
-      Session.set("showcreateBoxDialog", false);
 				
 			// TODO: Wrap to next row at some point.
 			Session.set("nextBoxX", nextBoxX + 64);
@@ -82,7 +88,33 @@ Template.addBoard.events({
   },
   'click .cancel': function () {
     Session.set("showNewBoardDialog", false);
-  }	
+  },
+  'click .save': function (event, template) {
+    var name = template.find(".newBoardName").value;
+    var publiclyReadable = template.find(".publiclyReadable").checked;
+    var publiclyWritable = template.find(".publiclyWritable").checked;
+		console.log(name, publiclyReadable, publiclyWritable);
+				
+		if (name.length) {
+		  Meteor.call('createBoard', {
+		    name: name,
+		    publiclyReadable: publiclyReadable,
+		    publiclyWritable: publiclyWritable,
+		    usersThatCanRead: [ Meteor.userId() ],
+		    usersThatCanWrite: [ Meteor.userId() ]
+		  }, 
+			function (error, board) {
+		    if (!error) {
+		      Session.set("currentBoard", board._id);
+					// Should cause a reload of the board.
+		    }
+		  });
+		  Session.set("showNewBoardDialog", false);
+		} 
+		else {
+		  Session.set("createError", "It needs a name.");
+		}
+  }
 });	
 
 // Defining this Handlebars helper method with a reference to the Session 
@@ -91,3 +123,18 @@ Template.addBoard.events({
 Template.addBoard.showNewBoardDialog = function () {
   return Session.get("showNewBoardDialog");
 };
+
+Template.newBoardDialog.error = function () {
+  return Session.get("createError");
+};
+
+Template.boardList.boards = function() {
+	return Boards.find();
+}
+
+Template.boardList.events({
+	'click .boardListItem': function(evt) {
+		// Set the current board.
+		Session.set("currentBoard", this._id);
+	}
+});
