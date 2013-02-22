@@ -138,37 +138,41 @@ function syncNodesToBoxes(svgNode, boxes) {
 
   // Sync the <g> elements to the box records. Add the drag behavior.
 	boxGroupsSelection.enter().append("g").classed("box", true)
-	.call(addGroupDragBehavior);
-
-	// Set up the rect and its position and color. Append it first so that it is 
-	// the furthest back, z-order-wise.
-	
-	// We need to sync the attributes of the child rects with the data attached 
-	// to the parent g elements, so copy the data to the children.
-	var bgRectSelection = boxGroupsSelection.selectAll("rect");
-	
-  syncCommonRectAttrs(boxGroupsSelection.append("rect")
-	.attr("fill", function(d) { return "white"; })
-	.attr("fill-opacity", function(d) { return 0.0; })
-	.attr("stroke", function (d) { return "red"; }));
+	.call(addGroupDragBehavior)
+	// Append the rect first so that it is the furthest back, z-order-wise.
+	.call(function (groupSelection) {
+		var appendedSelection = groupSelection.append("rect")
+		.attr("fill", function(d) { return "white"; })
+		.attr("fill-opacity", function(d) { return 0.0; })
+		.attr("stroke", function (d) { return "red"; })
+		.classed("box-background", true);
 		
-	// Add the sum box and label to the boxes.
-	boxGroupsSelection.append("rect")
-	.attr("stroke", "red").attr("fill", "orange")
-	.attr("x", function (box) { return box.x + box.width - 100; })
-	.attr("y", function (box) { return box.y + box.height - 44; })
-	.attr("width", function (box) { return 100; })
-	.attr("height", function (box) { return 44; });
-	
-	boxGroupsSelection.append("text").classed("sum", true).text(
-		function (box) { return sumForBox(box); })
+		syncCommonRectAttrs(appendedSelection);
+	})
+	// Append the sum background.
+	.call(function (groupSelection) {		
+		var appendedSelection = groupSelection.append("rect")
+		.attr("stroke", "red").attr("fill", "orange")
+		.attr("x", function (box) { return box.x + box.width - 100; })
+		.attr("y", function (box) { return box.y + box.height - 44; })
+		.attr("width", function (box) { return 100; })
+		.attr("height", function (box) { return 44; });
+	})
+	// Append the sum text.
+	.call(function (groupSelection) {		
+		var appendedSelection = groupSelection.append("text")
 		.attr("x", function (box) { return box.x + box.width - 100/2; })
 		.attr("y", function (box) { return box.y + box.height - 44/2 + 4; })
 		.attr("width", function (box) { return 100; })
 		.attr("height", function (box) { return 44; })
-		.attr("fill", function (box) { return "white"; });
-	
+		.attr("fill", function (box) { return "white"; })
+		.classed("sum", true);		
+	});
+		
 	boxGroupsSelection.exit().remove();
+	
+	boxGroupsSelection.select("text").text(
+		function (data) { return sumForBox(data); });
 	
 	makeSureItemsAreInFrontOfBoxes(svgNode);
 }
@@ -214,6 +218,7 @@ function syncNodesToItems(svgNode, items) {
 }
 
 function syncAttrsToItems(itemGroupSelection, items) {		
+	console.log("Syncing", items.length, "items");
 	// Set up the rect and its position and color.	
 	var bgRectSelection = itemGroupSelection.selectAll("rect");
 	
@@ -309,7 +314,7 @@ Template.board.rendered = function () {
 	  Meteor.subscribe('boards', {boardId: Session.get("currentBoard")});
 		
 	  Meteor.subscribe('boxes', {boardId: Session.get("currentBoard")}, function() {
-			// Set up the boxes.
+			// Set up the boxes.			
 			redrawBoxes();
     });	
 			
