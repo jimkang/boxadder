@@ -167,12 +167,25 @@ function syncNodesToBoxes(svgNode, boxes) {
 		.attr("height", function (box) { return 44; })
 		.attr("fill", function (box) { return "white"; })
 		.classed("sum", true);		
-	});
-		
+	})
+	// Append the delete button, which is defined in a <def> and instantiated
+	// with <use>.
+	.call(function (groupSelection) { groupSelection.append("use") });	
+	
 	boxGroupsSelection.exit().remove();
 	
 	boxGroupsSelection.select("text").text(
 		function (data) { return sumForBox(data); });
+	
+	// Set up the delete button.
+	boxGroupsSelection.selectAll("use")
+		.attr("xlink:href", "#deleteButtonPath")
+		.attr("x", function (box) { return box.x + box.width - 16; })
+		.attr("y", function (box) { return box.y + 4; })
+		.on("click", function (d, i) {
+			// Delete this box.
+			Boxes.remove(d._id);
+		});
 	
 	makeSureItemsAreInFrontOfBoxes(svgNode);
 }
@@ -239,7 +252,7 @@ function syncAttrsToItems(itemGroupSelection, items) {
 		console.log("Saving title:", d.title);
 		syncDatumToCollection(d, ['title'], Items, identityPassthrough);
 	});
-		
+	
 	// Set up the score field.
 	itemGroupSelection.selectAll("text.score")
 		.text(function (d) { return d.score; })
