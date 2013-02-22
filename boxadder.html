@@ -67,15 +67,19 @@
 </template>
 
 <template name="addItem">
-  <div id="new-item-box">
-    <input type="button" class="addNewItem" value="Add Item" />
-  </div>
+  {{#if currentBoardIsSet}}
+	  <div id="new-item-box">
+	    <input type="button" class="addNewItem" value="Add Item" />
+	  </div>
+	{{/if}}
 </template>	
 
 <template name="addBox">
-	<div>
-		<button type="button" class="close cancel">Add Box</button>
-	</div>
+  {{#if currentBoardIsSet}}
+		<div>
+			<button type="button" class="close cancel">Add Box</button>
+		</div>
+	{{/if}}
 </template>
 
 <template name="addBoard">

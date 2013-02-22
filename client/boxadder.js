@@ -46,7 +46,11 @@ Template.addItem.events({
 		Session.set("nextItemY", nextItemY + spaceBetweenItems);
 	}
 });	
-	
+
+Template.addItem.currentBoardIsSet = function() {
+	return Session.get('currentBoard');
+};
+
 Template.addBox.events({
   'click': function (event, template) {
     if (! Meteor.userId()) // must be logged in to create boxes
@@ -78,6 +82,10 @@ Template.addBox.events({
 			Session.set("nextBoxY", nextBoxY + 64);
   }
 });
+
+Template.addBox.currentBoardIsSet = function() {
+	return Session.get('currentBoard');
+};
 	
 Template.addBoard.events({
   'click .addBoard': function (event, template) {
