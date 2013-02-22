@@ -12,7 +12,13 @@ if (Meteor.isServer) {
 	Meteor.publish("boxes", function(params) { 
 		return Boxes.find({ board: params.boardId });
 	});
-	Meteor.publish("boards", function() { return Boards.find(); });
+	Meteor.publish("boards", function() { 
+		console.log("this.userId", this.userId);
+		// TODO: Find other non-public boards that user can read.
+		return Boards.find(
+			{ $or: [{ publiclyReadable: true }, { owner: this.userId } ]}
+		);
+	});
 }
 
 /*
