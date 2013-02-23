@@ -1,4 +1,7 @@
-/* Board rendering helpers */
+/* Data-DOM element syncing */
+
+function identityPassthrough(obj) { return obj; }
+function datumIdGetter(d) { return d._id; }
 
 function setD3GroupAttrsWithProplist(group, propnames) {
 	// We are running all these methods (attr, append, etc.) on the group
@@ -39,11 +42,6 @@ function syncCommonRectAttrs(group, cssClass) {
 	// need to re-set the class.
 	.attr("class", cssClass);
 };
-
-/* Element set up. */
-
-function identityPassthrough(obj) { return obj; }
-function datumIdGetter(d) { return d._id; }
 
 function syncNodesToBoxes(svgNode, boxes) {	
 	// Set up the <g> elements for the boxes.
