@@ -211,7 +211,7 @@ function makeSureItemsAreInFrontOfBoxes(svgNode) {
 			return 0;
 		}
 		else if (aIsItem && !bIsItem) {
-			// If a is an item and be is not, it should go after it.
+			// If a is an item and b is not, it should go after it.
 			return 1;
 		}
 		else {
