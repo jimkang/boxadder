@@ -14,9 +14,7 @@ function setD3GroupAttrsWithProplist(group, propnames) {
 
 // valueCleaner is a function that takes a value and returns it cleaned, if 
 // necessary.
-function syncDatumToCollection(datum, fieldArray, collection, valueCleaner) {
-	// console.log("Saving", positionData._id, "to:", positionData.x, positionData.y);
-	
+function syncDatumToCollection(datum, fieldArray, collection, valueCleaner) {	
 	var updateDict = {};
 	for (var i = 0; i < fieldArray.length; ++i) {
 		updateDict[fieldArray[i]] = valueCleaner(datum[fieldArray[i]]);
@@ -67,7 +65,27 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
         var p_el = d3.select(p);
  
         var frm = p_el.append("foreignObject");
+				
+				function removeForm() {
+					// I don't know why this is an issue since javascript is
+					// single-threaded, but without the timeout, there's an exception
+					// when hitting enter in the field because both the blur and keypress
+					// events call this one after another and one removes it before the 
+					// other knows it's gone.
+					setTimeout(function () { 
+						console.log("$(frm[0][0])", $(frm[0][0]));
+							$(frm[0][0]).remove(); 
+					}, 0);
+				}
  
+ 			 	var onSetFieldFunctionCalled = false;
+				function callOnSetFieldFunction(d) {
+					if (!onSetFieldFunctionCalled) {
+						onSetFieldFunction(d);
+						onSetFieldFunctionCalled = true;
+					}					
+				}
+				
         var inp = frm
         .attr("x", parseInt(el.attr('x')) + formXOffset)
         .attr("y", parseInt(el.attr('y')) - parseInt((el.attr('height'))/2))
@@ -80,21 +98,13 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
             // make the form go away when you jump out (form loses focus) 
 						// or hit ENTER:
             .on("blur", function() {
-              console.log("blur", this, arguments);
- 
               var txt = inp.node().value;
- 
-              d[field] = txt;
-							onSetFieldFunction(d);
-              el.text(function(d) { return d[field]; });
- 
-              // Note to self: frm.remove() will remove the entire <g> group!
-							// Remember the D3 selection logic!
-              p_el.select("foreignObject").remove();
+              d[field] = txt;							
+							callOnSetFieldFunction(d);
+              el.text(function(d) { return d[field]; });							
+							removeForm();
             })
             .on("keypress", function() {
-                console.log("keypress", this, arguments);
- 
               // IE fix
               if (!d3.event)
                   d3.event = window.event;
@@ -111,12 +121,13 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
                   var txt = inp.node().value;
  
                   d[field] = txt;
-									onSetFieldFunction(d);
+									callOnSetFieldFunction(d);
                   el.text(function(d) { return d[field]; });
- 
-                  // odd. Should work in Safari, but the debugger crashes on this instead.
-                  // Anyway, it SHOULD be here and it doesn't hurt otherwise.
-                  p_el.select("foreignObject").remove();
+									// I don't know what I changed to make this select() unable 
+									// to catch anything...
+                  // p_el.select("foreignObject").remove();
+									// ...but the code in removeForm() works.
+ 									removeForm();
                 }
             })
 						.attr("size", inputSize)
@@ -129,6 +140,7 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
 /* Element set up. */
 
 function identityPassthrough(obj) { return obj; }
+function datumIdGetter(d) { return d._id; }
 
 function syncNodesToBoxes(svgNode, boxes) {	
 	// Set up the <g> elements for the boxes.
@@ -202,7 +214,7 @@ function syncNodesToItems(svgNode, items) {
 	// data() then binds the children of the object and so on.
 	
   var itemGroupSelection = 
-		boxZoneSelection.selectAll("g .item").data(items, identityPassthrough);
+		boxZoneSelection.selectAll("g .item").data(items, datumIdGetter);
 	
 	itemGroupSelection.enter().append("g").classed("item", true)
 	// Add the dragging handler.
@@ -227,34 +239,42 @@ function syncNodesToItems(svgNode, items) {
 	itemGroupSelection.exit().remove();
 	
 	syncAttrsToItems(itemGroupSelection, items);
-	makeSureItemsAreInFrontOfBoxes(svgNode);	
+	makeSureItemsAreInFrontOfBoxes(svgNode);
 }
 
 function syncAttrsToItems(itemGroupSelection, items) {		
-	console.log("Syncing", items.length, "items");
-	// Set up the rect and its position and color.	
-	var bgRectSelection = itemGroupSelection.selectAll("rect");
-	
-  syncCommonRectAttrs(bgRectSelection, "item-background")
+	// TODO: Refactor sub-<g> element setup.
+	var bgRectSelection = itemGroupSelection.selectAll("rect");	
+	bgRectSelection.data(items, datumIdGetter)
 	.attr("fill", function(d) { return "green"; })
 	.attr("fill-opacity", function(d) { return 0.7; });
-		
+  syncCommonRectAttrs(bgRectSelection, "item-background");
+	
 	// Set up the title label.
-	setD3GroupAttrsWithProplist(
-		// d3 selectors are slightly different from jQuery's: No spaces for 
-		// multiple specifiers that are to be ANDed.
-		itemGroupSelection.selectAll("text.itemtitle")
-		.text(function (d) { return d.title; }), ["x", "width", "height"])
+	// d3 selectors are slightly different from jQuery's: No spaces for 
+	// multiple specifiers that are to be ANDed.
+	var titlesSelection = itemGroupSelection.selectAll("text.itemtitle");
+	titlesSelection.data(items, datumIdGetter);
+	
+	titlesSelection
+	.text(function (d) { return d.title; })
 	.attr("y", function (item) { return item.y + 44/2; })
 	.attr("fill", function (item) { return "white"; })
-	.call(makeEditable, "title", 20, 0, function (d) {
-		// When the field is set, update the collection containing the data.
-		console.log("Saving title:", d.title);
-		syncDatumToCollection(d, ['title'], Items, identityPassthrough);
-	});
+	.call(makeEditable, "title", 20, 0, 
+		function (d) {
+			// When the field is set, update the collection containing the data.
+			console.log("Saving title:", d.title);	
+			syncDatumToCollection(d, ['title'], Items, identityPassthrough);
+		}
+	);
+	
+	setD3GroupAttrsWithProplist(titlesSelection, ["x", "width", "height"]);
 	
 	// Set up the score field.
-	itemGroupSelection.selectAll("text.score")
+	var scoresSelection = itemGroupSelection.selectAll("text.score");
+	scoresSelection.data(items, datumIdGetter);
+	
+	scoresSelection
 		.text(function (d) { return d.score; })
 		.attr("x", function (item) { return 100 + item.x; })
 		.attr("y", function (item) { return item.y + 44/2; })
@@ -265,11 +285,11 @@ function syncAttrsToItems(itemGroupSelection, items) {
 			// When the field is set, update the collection containing the data.
 			console.log("Saving score:", d.score);
 			syncDatumToCollection(d, ['score'], Items, 
-				function(val) { return parseInt(val); });
+			function(val) { return parseInt(val); });
 		});
 		
 	// Set up the delete button.
-	itemGroupSelection.selectAll("use")
+	itemGroupSelection.selectAll("use").data(items, datumIdGetter)
 		.attr("xlink:href", "#deleteButtonPath")
 		.attr("x", function (item) { return 224 + item.x; })
 		.attr("y", function (item) { return item.y + 4; })
@@ -335,7 +355,7 @@ Template.board.rendered = function () {
 		// board are updated.)
     Meteor.subscribe('items', {boardId: Session.get("currentBoard")}, function() {
 			console.log("items or session changed.");
-			redrawItems();			
+			redrawItems();
 		});
 	});
 };
