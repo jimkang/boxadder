@@ -1,4 +1,4 @@
-/* Data-DOM element syncing */
+/* Data to DOM element syncing */
 
 function identityPassthrough(obj) { return obj; }
 function datumIdGetter(d) { return d._id; }
@@ -144,6 +144,9 @@ function syncNodesToItems(svgNode, items) {
 }
 
 function syncAttrsToItems(itemGroupSelection, items) {		
+	
+	function textElementYPos(item) { return item.y + item.height/2 + 4; }
+	
 	// TODO: Refactor sub-<g> element setup.
 	var bgRectSelection = itemGroupSelection.selectAll("rect");	
 	bgRectSelection.data(items, datumIdGetter)
@@ -159,7 +162,8 @@ function syncAttrsToItems(itemGroupSelection, items) {
 	
 	titlesSelection
 	.text(function (d) { return d.title; })
-	.attr("y", function (item) { return item.y + 44/2; })
+	.attr("x", function (item) { return item.x + 10; })
+	.attr("y", function (item) { return textElementYPos(item); })
 	.attr("fill", function (item) { return "white"; })
 	.call(makeEditable, "title", 20, 0, 
 		function (d) {
@@ -169,7 +173,7 @@ function syncAttrsToItems(itemGroupSelection, items) {
 		}
 	);
 	
-	setD3GroupAttrsWithProplist(titlesSelection, ["x", "width", "height"]);
+	setD3GroupAttrsWithProplist(titlesSelection, ["width", "height"]);
 	
 	// Set up the score field.
 	var scoresSelection = itemGroupSelection.selectAll("text.score");
@@ -177,10 +181,10 @@ function syncAttrsToItems(itemGroupSelection, items) {
 	
 	scoresSelection
 		.text(function (d) { return d.score; })
-		.attr("x", function (item) { return 100 + item.x; })
-		.attr("y", function (item) { return item.y + 44/2; })
+		.attr("x", function (item) { return item.width - 64 + item.x; })
+		.attr("y", function (item) { return textElementYPos(item); })
 		.attr("width", function (item) { return 100; })
-		.attr("height", function (item) { return 44; })
+		.attr("height", function (item) { return item.height - 4; })
 		.attr("fill", function (item) { return "white"; })
 		.call(makeEditable, "score", 4, -18, function (d) {
 			// When the field is set, update the collection containing the data.
