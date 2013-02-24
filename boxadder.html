@@ -7,23 +7,27 @@
   <div id="outer">		
 	  <div style="float: right">	
 			{{loginButtons align="right"}}
+			
+			<br /><br />
+			{{> boardMetadataSection }}
+			{{> addBoard }}
+			<br />
+			{{> boardList }}
+		
 		</div>
 
-		{{> boardList }}
-		<br />
-		{{> boardMetadataSection }}
-		
-		{{> addBoard }}
-		{{> addBox }}
-		{{> addItem }}
-		
-		{{> board }}
+		<div>		
+			{{> addBox }}
+			{{> addItem }}
+	
+			{{> board }}
+		</div>
   </div>
 </body>
 
 <template name="board">
   <div class="board">
-      <svg width="1024" height="1024">
+      <svg width="768" height="1024">
 			  <defs>
 					  <path id="deleteButtonPath" d="M 0 0 L 12 12 M 12 0 L 0 12"
 						fill="none" stroke="#282828" stroke-width="7" stroke-opacity="0.5"
@@ -69,17 +73,17 @@
 
 <template name="addItem">
   {{#if currentBoardIsSet}}
-	  <div id="new-item-box">
+	  <span id="new-item-box">
 	    <input type="button" class="addNewItem" value="Add Item" />
-	  </div>
+	  </span>
 	{{/if}}
 </template>	
 
 <template name="addBox">
   {{#if currentBoardIsSet}}
-		<div>
+		<span>
 			<button type="button" class="close cancel">Add Box</button>
-		</div>
+		</span>
 	{{/if}}
 </template>
 
@@ -126,6 +130,8 @@
 </template>
 
 <template name="boardList">
+	<span id="boardListHeader">Boards</span>
+	<br />
 	<div id="boardList">
 		{{#each boards}}
 			<div class="boardListItem {{selectedClass}}">
@@ -135,18 +141,20 @@
 	</div>
 </template>
 
-<template name="boardMetadataSection">
+<template name="boardMetadataSection">	
 	{{#if currentBoardIsSet}}
-		{{#with board}}
-			The {{name}} board is:
-			<ul>
-				<li>
-					<span class="{{visibilityCssClass}}">{{visibilitySummary}}</span>
-				</li>
-				<li>
-					<span class="{{writabilityCssClass}}">{{writabilitySummary}}</span>
-				</li>
-			</ul>
-		{{/with}}
+		<div class="boardMetadataSection">
+			{{#with board}}
+				The {{name}} board is:
+				<ul>
+					<li>
+						<span class="{{visibilityCssClass}}">{{visibilitySummary}}</span>
+					</li>
+					<li>
+						<span class="{{writabilityCssClass}}">{{writabilitySummary}}</span>
+					</li>
+				</ul>
+			{{/with}}
+		</div>
 	{{/if}}
 </template>

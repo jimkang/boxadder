@@ -15,9 +15,9 @@ body {
     margin: 0 auto;    
 }
 
-.board
+.board svg
 {
-	border: 1px dotted #444;
+	border: 1px dashed #444;
 }
 
 .item {
@@ -42,10 +42,6 @@ body {
 
 .selected {
   background-color: #8c4;
-}
-
-.item.selected .score {
-    color: black;
 }
 
 .details, .none {
@@ -80,6 +76,14 @@ body {
 
 .boardListItemLabel {
 	font-size: 1.2em;
+}
+
+#boardList {
+	border: 1px dashed black;	
+}
+
+#boardListHeader {
+	font-weight: bold;
 }
 
 .sum {
