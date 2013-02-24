@@ -11,7 +11,7 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
       d3.select(this).style("fill", null);
     })
     .on("click", function(d) {
-      console.log("editable", this);
+      // console.log("editable", this);
 
       var p = this.parentNode;
  
@@ -29,8 +29,8 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
 				// events call this one after another and one removes it before the 
 				// other knows it's gone.
 				setTimeout(function () { 
-					console.log("$(frm[0][0])", $(frm[0][0]));
-						$(frm[0][0]).remove(); 
+					// console.log("$(frm[0][0])", $(frm[0][0]));
+					$(frm[0][0]).remove(); 
 				}, 0);
 			}
  
