@@ -74,7 +74,7 @@ Meteor.methods({
 			publiclyWritable: options.publiclyWritable, 
 			usersThatCanRead: options.usersThatCanRead, 
 			usersThatCanWrite: options.usersThatCanWrite
-		});		
+		});
 	},
 
   createBox: function (options) {
