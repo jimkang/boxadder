@@ -13,7 +13,6 @@ if (Meteor.isServer) {
 		return Boxes.find({ board: params.boardId });
 	});
 	Meteor.publish("boards", function() { 
-		console.log("this.userId", this.userId);
 		// TODO: Find other non-public boards that user can read.
 		return Boards.find(
 			{ $or: [{ publiclyReadable: true }, { owner: this.userId } ]}
@@ -27,19 +26,28 @@ Boxes.allow({
   },
   update: function (userId, boxes, fields, modifier) {
     return _.all(boxes, function (box) {
-      if (userId !== box.owner)
-        return false; // not the owner  
-  
-      // A good improvement would be to validate the type of the new
-      // value of the field (and if a string, the length.) In the
-      // future Meteor will have a schema system to makes that easier.
-      return true;
+      return userCanWriteToBoard(userId, box.board);
     });
   },
   remove: function (userId, boxes) {
     return ! _.any(boxes, function (box) {
-      // deny if not the owner, or if other people are going
-      return box.owner !== userId;
+      return !userCanWriteToBoard(userId, box.board);
+    });
+  }
+});
+
+Items.allow({
+  insert: function (userId, item) {
+    return false;
+  },
+  update: function (userId, items, fields, modifier) {
+    return _.all(items, function (item) {
+      return userCanWriteToBoard(userId, item.board);
+    });
+  },
+  remove: function (userId, items) {
+    return ! _.any(items, function (item) {
+      return !userCanWriteToBoard(userId, item.board);
     });
   }
 });
@@ -106,7 +114,10 @@ Meteor.methods({
       throw new Meteor.Error(400, "Required parameter missing");
     if (! this.userId)
       throw new Meteor.Error(403, "You must be logged in");
-
+		if (!userCanWriteToBoard(this.userId, options.board)) {
+			throw new Meteor.Error(413, "You don't have permission to change this board.");
+		}
+			
     return Items.insert({
 			board: options.board,
       title: options.title,

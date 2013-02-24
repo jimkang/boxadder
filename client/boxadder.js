@@ -36,10 +36,10 @@ Template.addItem.events({
 			x: nextItemX, y: nextItemY, width: 240, height: 44,
 			board: Session.get("currentBoard")
     }, 
-		function (error, box) {
-      if (! error) {
-				// TODO.
-      }
+		function (error, item) {
+      if (error) {						
+				triggerErrorAlert(error, 2000);
+			}
     });
 				
 		Session.set("nextItemX", nextItemX);
