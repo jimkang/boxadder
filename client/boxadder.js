@@ -192,6 +192,37 @@ Template.boardMetadataSection.error = function () {
   return Session.get("createError");
 };
 
+Template.deleteBoard.board = function() {
+	return Boards.findOne(Session.get('currentBoard'));
+}
+
+Template.deleteBoard.canDeleteCurrentBoard = function() {
+	var canDelete = false;
+	var boardId = Session.get('currentBoard');
+	if (boardId) {
+		canDelete = userCanWriteToBoard(Meteor.userId(), boardId);
+	}
+	return canDelete;
+};
+
+Template.deleteBoard.events({
+  'click .delete': function (event, template) {				
+		var boardId = Session.get("currentBoard");
+		console.log("boardId", boardId);
+		if (boardId.length) {
+		  Meteor.call('deleteBoard', { boardId: boardId }, 
+			function (error, board) {
+		    if (error) {
+					triggerErrorAlert(error, 2000);
+				}
+				else {
+		      Session.set("currentBoard", null);
+		    }
+		  });
+		} 
+  }
+});
+
 /* Template utils */
 
 function triggerErrorAlert(error, duration) {

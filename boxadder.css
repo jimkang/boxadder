@@ -114,3 +114,7 @@ body {
 .alert-error {
 	background-color: #d20;
 }
+
+.delete {
+	color: #d20;	
+}

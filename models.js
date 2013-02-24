@@ -78,6 +78,24 @@ Meteor.methods({
 			usersThatCanWrite: options.usersThatCanWrite
 		});
 	},
+	
+	deleteBoard: function(options) {
+    options = options || {};
+    if (!(typeof options.boardId === "string" && options.boardId.length)) {
+      throw new Meteor.Error(400, "Required parameter missing");
+		}
+    if (! this.userId)
+      throw new Meteor.Error(403, "You must be logged in");
+		if (!userCanWriteToBoard(this.userId, options.boardId)) {
+			throw new Meteor.Error(413, "You don't have permission to delete this board.");
+		}
+		
+		// Remove associated items and boxes.
+		Items.remove({ board: options.boardId });
+		Boxes.remove({ board: options.boardId });
+		
+    return Boards.remove({ _id: options.boardId });
+	},
 
   createBox: function (options) {
     options = options || {};
