@@ -77,6 +77,23 @@ function syncNodesToBoxes(svgNode, boxes) {
 		.attr("fill", function (box) { return "white"; })
 		.classed("sum", true);
 	})
+	// Append the title background.
+	.call(function (groupSelection) {		
+		var appendedSelection = groupSelection.append("rect")
+		.attr("stroke", "red").attr("fill", "orange")
+		.attr("width", function (box) { return 200; })
+		.attr("height", function (box) { return 32; })
+		.attr("fill-opacity", 0.67)
+		.classed("box-title-background", true);
+	})
+	// Append the title text.
+	.call(function (groupSelection) {		
+		var appendedSelection = groupSelection.append("text")
+		.attr("width", function (box) { return 184; })
+		.attr("height", function (box) { return 24; })
+		.attr("fill", function (box) { return "white"; })
+		.classed("box-title", true);
+	})
 	// Append the delete button, which is defined in a <def> and instantiated
 	// with <use>.
 	.append("use")	
@@ -117,6 +134,24 @@ function syncAttrsToBoxes(boxGroupsSelection, boxes) {
 	.attr("x", function (box) { return box.x + box.width - 84/2 - 14; })
 	.attr("y", function (box) { return box.y + box.height - 24/2; })
 	.classed("sum", true);
+	
+	var titleBoxesSelection = boxGroupsSelection.selectAll("rect.box-title-background");
+	titleBoxesSelection.data(boxes, datumIdGetter)
+	.attr("x", function (box) { return box.x; })
+	.attr("y", function (box) { return box.y; })
+	.classed("box-title-background", true);
+
+	var titleTextsSelection = boxGroupsSelection.selectAll("text.box-title");
+	titleTextsSelection.data(boxes, datumIdGetter)
+	.text(function (box) { return box.title; })
+	.attr("x", function (box) { return box.x + 8; })
+	.attr("y", function (box) { return box.y + 20; })
+	.classed("box-title", true)
+	.call(makeEditable, "title", 20, 0, 
+		function (box) {
+			// When the field is set, update the collection containing the data.
+			syncDatumToCollection(box, ['title'], Boxes, identityPassthrough);
+		});
 
 	var deleteButtonsSelection = boxGroupsSelection.selectAll("use");
 	deleteButtonsSelection.data(boxes, datumIdGetter)
