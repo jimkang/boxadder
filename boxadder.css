@@ -15,9 +15,13 @@ body {
     margin: 0 auto;    
 }
 
-.board svg
-{
+.board svg {
 	border: 1px dashed #444;
+}
+
+.nonboard {
+	float: right;
+	width: 240px;
 }
 
 .item {
@@ -105,4 +109,8 @@ body {
 
 .writability-label.read-only {
 	color: #a24;
+}
+
+.alert-error {
+	background-color: #d20;
 }

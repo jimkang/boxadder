@@ -5,7 +5,7 @@
 <body>
 	
   <div id="outer">		
-	  <div style="float: right">	
+	  <div class="nonboard">	
 			{{loginButtons align="right"}}
 			
 			<br /><br />
@@ -142,6 +142,10 @@
 </template>
 
 <template name="boardMetadataSection">	
+  {{#if error}}
+    <div class="alert alert-error">{{error}}</div>
+  {{/if}}
+	
 	{{#if currentBoardIsSet}}
 		<div class="boardMetadataSection">
 			{{#with board}}

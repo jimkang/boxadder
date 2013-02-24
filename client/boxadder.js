@@ -75,6 +75,9 @@ Template.addBox.events({
         if (!error) {						
 					makeSureItemsAreInFrontOfBoxes($('svg')[0]);
         }
+				else {
+					triggerErrorAlert(error, 2000);
+				}
       });
 				
 			// TODO: Wrap to next row at some point.
@@ -183,4 +186,15 @@ Template.boardMetadataSection.currentBoardIsSet = function() {
 
 Template.boardMetadataSection.board = function() {
 	return Boards.findOne(Session.get('currentBoard'));
+}
+
+Template.boardMetadataSection.error = function () {
+  return Session.get("createError");
+};
+
+/* Template utils */
+
+function triggerErrorAlert(error, duration) {
+	Session.set("createError", error.reason);
+	setTimeout(function() { Session.set("createError", null); }, duration);
 }
