@@ -77,3 +77,8 @@ body {
 .modalHeader button {
 	float: right;
 }
+
+.sum {
+	font-weight: bold;
+	font-size: 1.8em;
+}

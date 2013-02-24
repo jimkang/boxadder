@@ -72,8 +72,8 @@ function syncNodesToBoxes(svgNode, boxes) {
 	// Append the sum text.
 	.call(function (groupSelection) {		
 		var appendedSelection = groupSelection.append("text")
-		.attr("width", function (box) { return 100; })
-		.attr("height", function (box) { return 44; })
+		.attr("width", function (box) { return 84; })
+		.attr("height", function (box) { return 24; })
 		.attr("fill", function (box) { return "white"; })
 		.classed("sum", true);
 	})
@@ -114,8 +114,8 @@ function syncAttrsToBoxes(boxGroupsSelection, boxes) {
 
 	var sumTextsSelection = boxGroupsSelection.selectAll("text.sum");
 	sumTextsSelection.data(boxes, datumIdGetter)
-	.attr("x", function (box) { return box.x + box.width - 100/2; })
-	.attr("y", function (box) { return box.y + box.height - 44/2 + 4; })
+	.attr("x", function (box) { return box.x + box.width - 84/2; })
+	.attr("y", function (box) { return box.y + box.height - 24/2; })
 	.classed("sum", true);
 
 	var deleteButtonsSelection = boxGroupsSelection.selectAll("use");
@@ -144,6 +144,8 @@ function syncNodesToItems(svgNode, items) {
 	// Append the rect first so that it is the furthest back, z-order-wise.
 	.call(function (groupSelection) {
 		var appendedSelection = groupSelection.append("rect")
+		.attr('rx', function() { return 4; })
+		.attr('ry', function() { return 4; })
 		.classed("item-background", true);
 	})
 	// Append the title.
