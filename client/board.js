@@ -47,7 +47,7 @@ function syncNodesToBoxes(svgNode, boxes) {
 	// Set up the <g> elements for the boxes.
   var boxGroupsSelection = 
 		d3.select(svgNode).select(".boxZone").selectAll("g .box")
-    	.data(boxes, identityPassthrough);
+    	.data(boxes, datumIdGetter);
 
   // Sync the <g> elements to the box records. Add the drag behavior.
 	boxGroupsSelection.enter().append("g").classed("box", true)
@@ -55,52 +55,73 @@ function syncNodesToBoxes(svgNode, boxes) {
 	// Append the rect first so that it is the furthest back, z-order-wise.
 	.call(function (groupSelection) {
 		var appendedSelection = groupSelection.append("rect")
+		.attr("_id", function(box) { return box._id; })
 		.attr("fill", function(d) { return "white"; })
 		.attr("fill-opacity", function(d) { return 0.0; })
 		.attr("stroke", function (d) { return "red"; })
-		.classed("box-background", true);
-		
-		syncCommonRectAttrs(appendedSelection);
+		.classed("box-background", true);			
 	})
 	// Append the sum background.
 	.call(function (groupSelection) {		
 		var appendedSelection = groupSelection.append("rect")
 		.attr("stroke", "red").attr("fill", "orange")
-		.attr("x", function (box) { return box.x + box.width - 100; })
-		.attr("y", function (box) { return box.y + box.height - 44; })
 		.attr("width", function (box) { return 100; })
-		.attr("height", function (box) { return 44; });
+		.attr("height", function (box) { return 44; })
+		.classed("sum-background", true);
 	})
 	// Append the sum text.
 	.call(function (groupSelection) {		
 		var appendedSelection = groupSelection.append("text")
-		.attr("x", function (box) { return box.x + box.width - 100/2; })
-		.attr("y", function (box) { return box.y + box.height - 44/2 + 4; })
 		.attr("width", function (box) { return 100; })
 		.attr("height", function (box) { return 44; })
 		.attr("fill", function (box) { return "white"; })
-		.classed("sum", true);		
+		.classed("sum", true);
 	})
 	// Append the delete button, which is defined in a <def> and instantiated
 	// with <use>.
-	.call(function (groupSelection) { groupSelection.append("use") });	
-	
+	.append("use")	
+		.attr("_id", function (box) { return box._id; })
+		.attr("xlink:href", "#deleteButtonPath")
+		.on("click", function (d, i) {
+			// Delete this box.
+			Boxes.remove(d._id);
+		});	
+
 	boxGroupsSelection.exit().remove();
 	
 	boxGroupsSelection.select("text").text(
 		function (data) { return sumForBox(data); });
 	
-	// Set up the delete button.
-	boxGroupsSelection.selectAll("use")
-		.attr("xlink:href", "#deleteButtonPath")
-		.attr("x", function (box) { return box.x + box.width - 16; })
-		.attr("y", function (box) { return box.y + 4; })
-		.on("click", function (d, i) {
-			// Delete this box.
-			Boxes.remove(d._id);
-		});
-	
+	syncAttrsToBoxes(boxGroupsSelection, boxes);
 	makeSureItemsAreInFrontOfBoxes(svgNode);
+}
+
+// Here, update the attributes that may change after an element is appended.
+// e.g. Other instance of client moves a box somewhere and x and y are updated
+// on an existing box element group although no new box element group needs to
+// be created.
+function syncAttrsToBoxes(boxGroupsSelection, boxes) {
+	
+	var bgRectsSelection = boxGroupsSelection.selectAll("rect.box-background");
+	bgRectsSelection.data(boxes, datumIdGetter);
+	syncCommonRectAttrs(bgRectsSelection, "box-background");
+
+	var sumBoxesSelection = boxGroupsSelection.selectAll("rect.sum-background");
+	sumBoxesSelection.data(boxes, datumIdGetter)
+	.attr("x", function (box) { return box.x + box.width - 100; })
+	.attr("y", function (box) { return box.y + box.height - 44; })
+	.classed("sum-background", true);
+
+	var sumTextsSelection = boxGroupsSelection.selectAll("text.sum");
+	sumTextsSelection.data(boxes, datumIdGetter)
+	.attr("x", function (box) { return box.x + box.width - 100/2; })
+	.attr("y", function (box) { return box.y + box.height - 44/2 + 4; })
+	.classed("sum", true);
+
+	var deleteButtonsSelection = boxGroupsSelection.selectAll("use");
+	deleteButtonsSelection.data(boxes, datumIdGetter)
+	.attr("x", function (box) { return box.x + box.width - 16; })
+	.attr("y", function (box) { return box.y + 4; });
 }
 
 function syncNodesToItems(svgNode, items) {
@@ -240,7 +261,7 @@ Template.board.rendered = function () {
 	function redrawItems() {
 		var itemsContext = new Meteor.deps.Context();
 		itemsContext.on_invalidate(redrawItems);
-		itemsContext.run(function() {			
+		itemsContext.run(function() {
 			var items = Items.find().fetch();
 			syncNodesToItems(self.node, items);
 		});
@@ -259,7 +280,6 @@ Template.board.rendered = function () {
 		// Set up the items. (And set them up again each time they or the current
 		// board are updated.)
     Meteor.subscribe('items', {boardId: Session.get("currentBoard")}, function() {
-			console.log("items or session changed.");
 			redrawItems();
 		});
 	});
