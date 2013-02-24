@@ -39,8 +39,9 @@ body {
 		float: right;
 }
 */
-.item.selected {
-    background-color: yellow;
+
+.selected {
+  background-color: #ff6;
 }
 
 .item.selected .score {

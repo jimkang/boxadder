@@ -140,6 +140,15 @@ Template.boardList.boards = function() {
 	return Boards.find();
 }
 
+Template.boardList.selectedClass = function() {
+	var cssClass = "";
+	if (Session.get("currentBoard") === this._id) {
+		console.log("Selected!");
+		cssClass = "selected";
+	}
+	return cssClass;
+}
+
 Template.boardList.events({
 	'click .boardListItem': function(evt) {
 		// Set the current board.
