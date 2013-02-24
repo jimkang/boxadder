@@ -83,6 +83,7 @@ Template.addBox.events({
   }
 });
 
+// TODO: Find how to share a helper among the templates.
 Template.addBox.currentBoardIsSet = function() {
 	return Session.get('currentBoard');
 };
@@ -143,7 +144,6 @@ Template.boardList.boards = function() {
 Template.boardList.selectedClass = function() {
 	var cssClass = "";
 	if (Session.get("currentBoard") === this._id) {
-		console.log("Selected!");
 		cssClass = "selected";
 	}
 	return cssClass;
@@ -155,3 +155,32 @@ Template.boardList.events({
 		Session.set("currentBoard", this._id);
 	}
 });
+
+Template.boardMetadataSection.visibilitySummary = function() {
+	// TODO: Finer-grained permissions.
+	return this.publiclyReadable ? "Public" : "Private";
+}
+
+Template.boardMetadataSection.visibilityCssClass = function() {	
+	return this.publiclyReadable ? 
+	"public visibility-label" : "private visibility-label";
+}
+
+Template.boardMetadataSection.writabilitySummary = function() {
+	return (this.publiclyWritable || this.owner === Meteor.userId()) ?
+	"Changeable by you" : "Not changeable by you";	
+}
+
+Template.boardMetadataSection.writabilityCssClass = function() {
+	return (this.publiclyWritable || this.owner === Meteor.userId()) ?
+	"writability-label writable" : "writability-label read-only";	
+}
+
+// TODO: Find how to share a helper among the templates.
+Template.boardMetadataSection.currentBoardIsSet = function() {
+	return Session.get('currentBoard');
+};
+
+Template.boardMetadataSection.board = function() {
+	return Boards.findOne(Session.get('currentBoard'));
+}

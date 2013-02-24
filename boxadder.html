@@ -10,10 +10,13 @@
 		</div>
 
 		{{> boardList }}
+		<br />
+		{{> boardMetadataSection }}
+		
 		{{> addBoard }}
 		{{> addBox }}
 		{{> addItem }}
-				
+		
 		{{> board }}
   </div>
 </body>
@@ -126,8 +129,24 @@
 	<div id="boardList">
 		{{#each boards}}
 			<div class="boardListItem {{selectedClass}}">
-				{{name}}
+				<span class="boardListItemLabel">{{name}}</span>
 			</div>
 		{{/each}}
 	</div>
+</template>
+
+<template name="boardMetadataSection">
+	{{#if currentBoardIsSet}}
+		{{#with board}}
+			The {{name}} board is:
+			<ul>
+				<li>
+					<span class="{{visibilityCssClass}}">{{visibilitySummary}}</span>
+				</li>
+				<li>
+					<span class="{{writabilityCssClass}}">{{writabilitySummary}}</span>
+				</li>
+			</ul>
+		{{/with}}
+	{{/if}}
 </template>

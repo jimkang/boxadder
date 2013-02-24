@@ -78,7 +78,27 @@ body {
 	float: right;
 }
 
+.boardListItemLabel {
+	font-size: 1.2em;
+}
+
 .sum {
 	font-weight: bold;
 	font-size: 1.8em;
+}
+
+.visibility-label {
+	font-size: 0.9em;
+}
+
+.visibility-label.private {
+	color: #a24;
+}
+
+.writability-label {
+	font-size: 0.9em;
+}
+
+.writability-label.read-only {
+	color: #a24;
 }
