@@ -21,7 +21,6 @@ if (Meteor.isServer) {
 	});
 }
 
-/*
 Boxes.allow({
   insert: function (userId, box) {
     return false; // no cowboy inserts -- use createBox method
@@ -29,11 +28,7 @@ Boxes.allow({
   update: function (userId, boxes, fields, modifier) {
     return _.all(boxes, function (box) {
       if (userId !== box.owner)
-        return false; // not the owner
-  
-      var allowed = ["title", "description"];
-      if (_.difference(fields, allowed).length)
-        return false; // tried to write to forbidden field
+        return false; // not the owner  
   
       // A good improvement would be to validate the type of the new
       // value of the field (and if a string, the length.) In the
@@ -48,7 +43,6 @@ Boxes.allow({
     });
   }
 });
-*/
 
 Meteor.methods({
 	createBoard: function(options) {
@@ -88,6 +82,9 @@ Meteor.methods({
       throw new Meteor.Error(413, "Title too long");
     if (! this.userId)
       throw new Meteor.Error(403, "You must be logged in");
+		if (!userCanWriteToBoard(this.userId, options.board)) {
+			throw new Meteor.Error(413, "You don't have permission to change this board.");
+		}
 
     return Boxes.insert({
       owner: this.userId,
@@ -126,6 +123,15 @@ Meteor.methods({
 
 
 /* Model utils */
+
+function userCanWriteToBoard(userId, boardId) {
+	var canWrite = false;
+	var board = Boards.findOne(boardId);
+	if (board) {
+		canWrite = (board.publiclyWritable || board.owner == userId);			
+	}
+	return canWrite;
+}
 
 function sumForBox(box) {
 	var total = 0;
