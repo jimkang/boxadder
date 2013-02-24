@@ -24,7 +24,7 @@ function syncDatumToCollection(datum, fieldArray, collection, valueCleaner) {
 	}
 	
 	// Meteor.flush();
-	
+		
 	collection.update(datum._id, {$set: updateDict}, 
 		function(error, result) {
 			if (result === null) {
@@ -114,7 +114,7 @@ function syncAttrsToBoxes(boxGroupsSelection, boxes) {
 
 	var sumTextsSelection = boxGroupsSelection.selectAll("text.sum");
 	sumTextsSelection.data(boxes, datumIdGetter)
-	.attr("x", function (box) { return box.x + box.width - 84/2; })
+	.attr("x", function (box) { return box.x + box.width - 84/2 - 14; })
 	.attr("y", function (box) { return box.y + box.height - 24/2; })
 	.classed("sum", true);
 
