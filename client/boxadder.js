@@ -97,9 +97,7 @@ Template.boardAdminSection.events({
     if (! Meteor.userId()) // must be logged in to copy boards
       return;
 			
-	    Meteor.call('copyBoard', {
-	      boardId: Session.get("currentBoard")
-	    }, 
+	    Meteor.call('copyBoard', { boardId: Session.get("currentBoard") },
 			function (error, newBoardId) {
 	      if (error) {						
 					triggerErrorAlert(error, 2000);
@@ -107,7 +105,7 @@ Template.boardAdminSection.events({
 				else {
 					console.log("Setting currentBoard to:", newBoardId);
 					Session.set("currentBoard", newBoardId);
-				}				
+				}
 	    });
   },
   'click .cancel': function () {

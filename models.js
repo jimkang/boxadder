@@ -97,72 +97,6 @@ Meteor.methods({
     return Boards.remove({ _id: options.boardId });
 	},
 
-	// There's problems with syncing the inserted board id on the client side 
-	// and server side. Don't use this for now.
-	
-	// The callback should take a error object and a boardId.
-	copyBoard: function(options) {
-    options = options || {};
-    if (!(typeof options.boardId === "string" && options.boardId.length)) {
-      throw new Meteor.Error(400, "Required parameter missing");
-		}
-		if (!options.callback) {
-      throw new Meteor.Error(400, "Required parameter missing");			
-		}
-    if (! this.userId)
-      throw new Meteor.Error(403, "You must be logged in");
-			
-		// Create new board.
-		var currentBoard = Boards.findOne({ _id: options.boardId });
-		// Drop the id from the board and insert that as the new board.
-		delete currentBoard["_id"];
-		console.log("Inserting board:", currentBoard);
-		Boards.insert(currentBoard, 
-			function(error, newBoardId) {
-				if (!error) {
-					console.log("Inserted id:", newBoardId);
-					var allBoards = Boards.find().fetch();
-		
-					// Creates duplicates of the records that have different _ids, makes
-					// changes specified in the recordTransformer function to them.
-					function duplicateRecords(recordArray, collection, recordTransformer) {
-						// Scrub the _ids out of the records.
-						var idLessRecords = _.map(recordArray, function(record) {
-							if ("_id" in record) {
-								delete record["_id"];
-							}
-							return recordTransformer(record);
-						});
-	
-						collection.insert(idLessRecords);
-					}
-		
-					var userId = this.userId;
-					function updateBoardAndOwnerInRecord(record) {
-						record.board = newBoardId;
-						record.owner = userId;
-						console.log("Transformed record:", record);
-						return record;
-					};
-		
-					// Copy associated items and boxes.
-					duplicateRecords(Items.find({ board: options.boardId }).fetch(), Items, 
-						updateBoardAndOwnerInRecord);
-					duplicateRecords(Boxes.find({ board: options.boardId }).fetch(), Boxes, 
-						updateBoardAndOwnerInRecord);
-						
-					if (Meteor.isServer) {
-						options.callback(error, newBoardId);
-					}
-				}
-				else {
-					options.callback(error, null);
-				}
-		});
-		
-    return;
-	},
-	
   createBox: function (options) {
     options = options || {};
     if (! (typeof options.title === "string" && options.title.length &&
@@ -264,4 +198,66 @@ function sumForBox(box) {
 	return total;	
 }
 
+if (Meteor.isServer) {	
+	
+	// Because this operation requires chained insert calls, this has to be 
+	// done on the server. A client stub version of this would end up getting 
+	// a temp _id for the new board, then using that to create new items and 
+	// boxes. That temp _id would then become invalid after syncing with the 
+	// server.
+	
+	function copyBoard(boardId, userId) {		
+		// Create new board.
+		var currentBoard = Boards.findOne({ _id: boardId });
+		// Drop the id from the board and insert that as the new board.
+		delete currentBoard["_id"];
 
+		var newBoardId = Boards.insert(currentBoard); 
+		if (newBoardId) {
+			var allBoards = Boards.find().fetch();
+		
+			// Creates duplicates of the records that have different _ids, makes
+			// changes specified in the recordTransformer function to them.
+			function duplicateRecords(recordArray, collection, recordTransformer) {
+				// Scrub the _ids out of the records.
+				var idLessRecords = _.map(recordArray, function(record) {
+					if ("_id" in record) {
+						delete record["_id"];
+					}
+					var insertedId = collection.insert(recordTransformer(record));
+				});
+				
+				// Note: Mongo bulk insert doesn't seem to be supported.
+			}
+		
+			function updateBoardAndOwnerInRecord(record) {
+				record.board = newBoardId;
+				record.owner = userId;
+				return record;
+			};
+		
+			// Copy associated items and boxes.
+			duplicateRecords(Items.find({ board: boardId }).fetch(), Items, 
+				updateBoardAndOwnerInRecord);
+			duplicateRecords(Boxes.find({ board: boardId }).fetch(), Boxes, 
+				updateBoardAndOwnerInRecord);
+								
+			// console.log("Added boxes:", Boxes.find({board: newBoardId}).fetch());
+		}
+		return newBoardId;
+	}
+	
+	Meteor.methods({
+		copyBoard: function(options) {
+		  options = options || {};
+		
+		  if (!(typeof options.boardId === "string" && options.boardId.length)) {
+		    throw new Meteor.Error(400, "Required parameter (boardId) missing");
+			}
+		  if (! this.userId)
+		    throw new Meteor.Error(403, "You must be logged in");
+		
+			return copyBoard(options.boardId, this.userId);
+		}			
+	});
+}
