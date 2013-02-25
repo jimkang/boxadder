@@ -1,4 +1,4 @@
-Template.addItem.events({
+Template.boardControlBar.events({
 	'click .addNewItem': function (event, template) {
 		var spaceBetweenItems = 50;
 	  var nextItemX = Session.get("nextItemX");
@@ -44,54 +44,49 @@ Template.addItem.events({
 				
 		Session.set("nextItemX", nextItemX);
 		Session.set("nextItemY", nextItemY + spaceBetweenItems);
-	}
-});	
-
-Template.addItem.currentBoardIsSet = function() {
-	return Session.get('currentBoard');
-};
-
-Template.addBox.events({
-  'click': function (event, template) {
+	},
+  'click .addNewBox': function (event, template) {
     if (! Meteor.userId()) // must be logged in to create boxes
       return;
 
-			// TODO: Put them somewhere other than 0, 0.
-		  var nextBoxX = 0;
-		  var nextBoxY = 0;
-			if (nextBoxX === undefined) {
-				nextBoxX = 0;
-			}
-			if (nextBoxY === undefined) {
-				nextBoxY = 0;
-			}
+		// TODO: Put them somewhere other than 0, 0.
+	  var nextBoxX = 0;
+	  var nextBoxY = 0;
+		if (nextBoxX === undefined) {
+			nextBoxX = 0;
+		}
+		if (nextBoxY === undefined) {
+			nextBoxY = 0;
+		}
 				
-      Meteor.call('createBox', {
-        title: "New Box",
-				x: nextBoxX, y: nextBoxY, width: 320, height: 320, 
-				board: Session.get("currentBoard")
-      }, 
-			function (error, box) {
-        if (!error) {						
-					makeSureItemsAreInFrontOfBoxes($('svg')[0]);
-        }
-				else {
-					triggerErrorAlert(error, 2000);
-				}
-      });
+    Meteor.call('createBox', {
+      title: "New Box",
+			x: nextBoxX, y: nextBoxY, width: 320, height: 320, 
+			board: Session.get("currentBoard")
+    }, 
+		function (error, box) {
+      if (!error) {						
+				makeSureItemsAreInFrontOfBoxes($('svg')[0]);
+      }
+			else {
+				triggerErrorAlert(error, 2000);
+			}
+    });
 				
-			// TODO: Wrap to next row at some point.
-			Session.set("nextBoxX", nextBoxX + 64);
-			Session.set("nextBoxY", nextBoxY + 64);
-  }
-});
+		// TODO: Wrap to next row at some point.
+		Session.set("nextBoxX", nextBoxX + 64);
+		Session.set("nextBoxY", nextBoxY + 64);
+  }	
+});	
+
+Template.boardControlBar.boardIsWritable = function() {
+	return boardIsWritable();
+};
 
 // TODO: Find how to share a helper among the templates.
-Template.addBox.currentBoardIsSet = function() {
-	return Session.get('currentBoard');
-};
+
 	
-Template.addOrCopyBoard.events({
+Template.boardAdminSection.events({
   'click .addBoard': function (event, template) {
     if (! Meteor.userId()) // must be logged in to create boards
       return;
@@ -149,8 +144,12 @@ Template.addOrCopyBoard.events({
 // Defining this Handlebars helper method with a reference to the Session 
 // variable showNewBoardDialog in it makes Meteor reevaluate the addBoard
 // template when that Session variable changes.
-Template.addOrCopyBoard.showNewBoardDialog = function () {
+Template.boardAdminSection.showNewBoardDialog = function () {
   return Session.get("showNewBoardDialog");
+};
+
+Template.boardAdminSection.signedIn = function() {
+	return Meteor.userId();
 };
 
 Template.newBoardDialog.error = function () {
@@ -214,12 +213,7 @@ Template.deleteBoard.board = function() {
 }
 
 Template.deleteBoard.canDeleteCurrentBoard = function() {
-	var canDelete = false;
-	var boardId = Session.get('currentBoard');
-	if (boardId) {
-		canDelete = userCanWriteToBoard(Meteor.userId(), boardId);
-	}
-	return canDelete;
+	return boardIsWritable();
 };
 
 Template.deleteBoard.events({
@@ -245,4 +239,13 @@ Template.deleteBoard.events({
 function triggerErrorAlert(error, duration) {
 	Session.set("createError", error.reason);
 	setTimeout(function() { Session.set("createError", null); }, duration);
+}
+
+function boardIsWritable() {
+	var canWrite = false;
+	var boardId = Session.get('currentBoard');
+	if (boardId) {
+		canWrite = userCanWriteToBoard(Meteor.userId(), boardId);
+	}
+	return canWrite;	
 }

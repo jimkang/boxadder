@@ -10,7 +10,7 @@
 			
 			<br /><br />
 			{{> boardMetadataSection }}
-			{{> addOrCopyBoard }}
+			{{> boardAdminSection }}
 			<br />
 			{{> boardList }}
 			<br />
@@ -18,10 +18,8 @@
 		
 		</div>
 
-		<div>		
-			{{> addBox }}
-			{{> addItem }}
-	
+		<div>
+			{{> boardControlBar }}	
 			{{> board }}
 		</div>
   </div>
@@ -73,30 +71,39 @@
   </div>
 </template>
 
-<template name="addItem">
-  {{#if currentBoardIsSet}}
+<template name="boardControlBar">
+  {{#if boardIsWritable}}
 	  <span id="new-item-box">
 	    <input type="button" class="addNewItem" value="Add Item" />
 	  </span>
-	{{/if}}
-</template>	
-
-<template name="addBox">
-  {{#if currentBoardIsSet}}
+		
 		<span>
-			<button type="button" class="close cancel">Add Box</button>
+			<button type="button" class="addNewBox">Add Box</button>
 		</span>
+		
+		<p>
+		
+			<span class="explanation">
+				Boxadder calculates the sum of items in boxes. Add items and boxes with the buttons, then move them around and change their values.
+			</span>
+		
+		</p>
 	{{/if}}
 </template>
 
-<template name="addOrCopyBoard">
-	<div>
-		<button type="button" class="addBoard">Add Board</button>
-		<!-- <button type="button" class="copyBoard">Copy Board</button> -->
-	</div>
-  {{#if showNewBoardDialog}}
-    {{> newBoardDialog}}
-  {{/if}}	
+<template name="boardAdminSection">
+	{{#if signedIn}}
+		<div>
+			<button type="button" class="addBoard">Add Board</button>
+			<!-- <button type="button" class="copyBoard">Copy Board</button> -->
+		</div>
+	  {{#if showNewBoardDialog}}
+	    {{> newBoardDialog}}
+	  {{/if}}
+	{{else}}
+		<span class="selected"><strong>Sign in</strong></span> to add new boards and to mess with existing ones!
+		<br />
+	{{/if}}
 </template>
 
 <template name="newBoardDialog">

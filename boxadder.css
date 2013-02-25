@@ -8,6 +8,7 @@ body {
     -moz-user-select: none;
     -o-user-select: none;
     user-select: none;
+		color: #332;
 }
 
 #outer {
@@ -117,4 +118,9 @@ body {
 
 .delete {
 	color: #d20;	
+}
+
+.explanation {
+	font-size: 0.95em;
+	background-color: #fc8;
 }
