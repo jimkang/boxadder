@@ -10,7 +10,7 @@
 			
 			<br /><br />
 			{{> boardMetadataSection }}
-			{{> addBoard }}
+			{{> addOrCopyBoard }}
 			<br />
 			{{> boardList }}
 			<br />
@@ -89,9 +89,10 @@
 	{{/if}}
 </template>
 
-<template name="addBoard">
+<template name="addOrCopyBoard">
 	<div>
 		<button type="button" class="addBoard">Add Board</button>
+		<!-- <button type="button" class="copyBoard">Copy Board</button> -->
 	</div>
   {{#if showNewBoardDialog}}
     {{> newBoardDialog}}

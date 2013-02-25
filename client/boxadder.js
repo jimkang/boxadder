@@ -91,12 +91,29 @@ Template.addBox.currentBoardIsSet = function() {
 	return Session.get('currentBoard');
 };
 	
-Template.addBoard.events({
+Template.addOrCopyBoard.events({
   'click .addBoard': function (event, template) {
     if (! Meteor.userId()) // must be logged in to create boards
       return;
 
 		  Session.set("showNewBoardDialog", true);
+  },
+  'click .copyBoard': function (event, template) {
+    if (! Meteor.userId()) // must be logged in to copy boards
+      return;
+			
+	    Meteor.call('copyBoard', {
+	      boardId: Session.get("currentBoard")
+	    }, 
+			function (error, newBoardId) {
+	      if (error) {						
+					triggerErrorAlert(error, 2000);
+				}
+				else {
+					console.log("Setting currentBoard to:", newBoardId);
+					Session.set("currentBoard", newBoardId);
+				}				
+	    });
   },
   'click .cancel': function () {
     Session.set("showNewBoardDialog", false);
@@ -132,7 +149,7 @@ Template.addBoard.events({
 // Defining this Handlebars helper method with a reference to the Session 
 // variable showNewBoardDialog in it makes Meteor reevaluate the addBoard
 // template when that Session variable changes.
-Template.addBoard.showNewBoardDialog = function () {
+Template.addOrCopyBoard.showNewBoardDialog = function () {
   return Session.get("showNewBoardDialog");
 };
 
