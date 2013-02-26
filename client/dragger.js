@@ -1,24 +1,24 @@
 // Handles drag events on svg groups.
 
-var Dragger = {
+var BoardDragger = {
 	// Members to keep track of the change across the current drag.
 	currentDragChangeX: 0,
 	currentDragChangeY: 0,
 	
 	resetDragChange: function() {
-		Dragger.currentDragChangeX = 0;
-		Dragger.currentDragChangeY = 0;
+		BoardDragger.currentDragChangeX = 0;
+		BoardDragger.currentDragChangeY = 0;
 	},
 	
 	updateDragChangeWithD3Event: function() {
-		Dragger.currentDragChangeX += d3.event.dx;
-		Dragger.currentDragChangeY += d3.event.dy;		
+		BoardDragger.currentDragChangeX += d3.event.dx;
+		BoardDragger.currentDragChangeY += d3.event.dy;		
 	},
 	
 	// A method to provide to the d3 drag behavior to run when something is
 	// dragged.
 	groupDragMove: function(d) {
-		Dragger.updateDragChangeWithD3Event();
+		BoardDragger.updateDragChangeWithD3Event();
 		
 		d.x += d3.event.dx;
 		d.y += d3.event.dy;
@@ -34,11 +34,11 @@ var Dragger = {
 	saveAndRecalcOnDragStop: function(d) {
 		// Do this work only if there was an actual change. A drag can end with 
 		// 0 movement in both dimensions.
-		if ((Dragger.currentDragChangeX === 0) && 
-			(Dragger.currentDragChangeY === 0)) {
+		if ((BoardDragger.currentDragChangeX === 0) && 
+			(BoardDragger.currentDragChangeY === 0)) {
 			return;
 		}		
-		Dragger.resetDragChange();
+		BoardDragger.resetDragChange();
 		
 		// First, commit the changes to what was dragged.
 
