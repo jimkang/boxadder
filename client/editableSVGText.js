@@ -51,6 +51,22 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
         e.preventDefault();
 			}
 			
+			function exitEditing(d) {
+        var txt = inp.node().value;
+				if (editCancelled) {
+					// Reset this flag.
+					editCancelled = false;
+				}
+				else {
+	        d[field] = txt;
+					callOnSetFieldFunction(d);
+          el.text(function(d) { return d[field]; });
+				}
+				removeForm();
+				doOnEditEnd();
+			  $(document).off('click');
+			}
+			
 			var editCancelled = false;
 				
       var inp = frm
@@ -65,19 +81,7 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
           // make the form go away when you jump out (form loses focus) 
 					// or hit ENTER:
           .on("blur", function() {
-						console.log("blur!");
-            var txt = inp.node().value;
-            d[field] = txt;
-						if (editCancelled) {
-							// Reset this flag.
-							editCancelled = false;
-						}
-						else {
-							callOnSetFieldFunction(d);
-	            el.text(function(d) { return d[field]; });
-						}
-						removeForm();
-						doOnEditEnd();
+						exitEditing(d);
           })
           .on("keypress", function() {
             // IE fix
@@ -107,11 +111,9 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
                 d3.event = window.event;								 
             var e = d3.event;
 						
-						console.log("e.keyCode", e.keyCode);
 						if (e.keyCode == 27) { // Esc
 							stopEventBubbling(e);
 							editCancelled = true;
-							console.log("Esc!");
 							removeForm();
 						}
 					})
@@ -121,7 +123,18 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
 						doOnEditStart();
 						// It's important to call focus *after* the value is set. This way,
 						// the value text gets highlighted.
-						this.focus(); 
+						this.focus();
+						
+						// Possibly because this is in a <foreignobject>, clicks outside 
+						// of 
+						var inputElement = this;						
+						$(document).on('click', function(e) {
+							var clickedElement = 
+								document.elementFromPoint(e.clientX, e.clientY);
+							if (clickedElement !== inputElement) {
+								exitEditing($(inputElement).data);
+							}
+						});
 					});
     });
 }
