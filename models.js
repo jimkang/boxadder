@@ -211,6 +211,8 @@ if (Meteor.isServer) {
 		var currentBoard = Boards.findOne({ _id: boardId });
 		// Drop the id from the board and insert that as the new board.
 		delete currentBoard["_id"];
+		// Set the new board owner to the copying user.
+		currentBoard.owner = userId;
 
 		var newBoardId = Boards.insert(currentBoard); 
 		if (newBoardId) {
