@@ -70,6 +70,6 @@ var BoardDragger = {
 // and child nodes).
 
 var addGroupDragBehavior = d3.behavior.drag().origin(Object)
-	.on("drag", Dragger.groupDragMove)
+	.on("drag", BoardDragger.groupDragMove)
 	// .on("dragstart", Dragger.dragStarted);
-	.on("dragend", Dragger.saveAndRecalcOnDragStop);
+	.on("dragend", BoardDragger.saveAndRecalcOnDragStop);

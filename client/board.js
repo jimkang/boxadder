@@ -56,8 +56,8 @@ function syncNodesToBoxes(svgNode, boxes) {
 	.call(function (groupSelection) {
 		var appendedSelection = groupSelection.append("rect")
 		.attr("_id", function(box) { return box._id; })
-		.attr("fill", function(d) { return "white"; })
-		.attr("fill-opacity", function(d) { return 0.0; })
+		.attr("fill", function(d) { return "#210"; })
+		.attr("fill-opacity", function(d) { return 0.05; })
 		.attr("stroke", function (d) { return "red"; })
 		.classed("box-background", true);			
 	})
@@ -198,7 +198,7 @@ function syncNodesToItems(svgNode, items) {
 	itemGroupSelection.exit().remove();
 	
 	syncAttrsToItems(itemGroupSelection, items);
-	makeSureItemsAreInFrontOfBoxes(svgNode);
+	makeSureItemsAreInFrontOfBoxes(svgNode);	
 }
 
 function syncAttrsToItems(itemGroupSelection, items) {		
@@ -277,14 +277,48 @@ function makeSureItemsAreInFrontOfBoxes(svgNode) {
 		else {
 			return -1;
 		}
-	});
+	});	
 }
+
+function setUpZoomOnBoard() {
+	
+	// Make x and y scaling functions that just returns whatever is passed into 
+	// them (same domain and range).
+	var width = 768, height = 1024;
+	
+	var x = d3.scale.linear()
+    .domain([0, width])
+    .range([0, width]);
+
+	var y = d3.scale.linear()
+    .domain([0, height])
+    .range([height, 0]);
+	
+	// When zoom and pan gestures happen inside of #boardSVG, have it call the 
+	// zoom function to make changes.
+	d3.select("#boardSVG").call(
+		d3.behavior.zoom().x(x).y(y).scaleExtent([0.0625, 4]).on("zoom", zoom)
+	);
+	
+	var boxZoneSelection = d3.select("g.boxZone");
+
+	// This function applies the zoom changes to the <g> element rather than the 
+	// <svg> element because <svg>s do not have a transform attribute. 
+	// The behavior is connected to the <svg> rather than the <g> because then
+	// dragging-to-pan doesn't work otherwise. Maybe something cannot be 
+	// transformed while it is receiving drag events?
+	function zoom() {		
+		boxZoneSelection.attr("transform", 
+			"translate(" + d3.event.translate + ")" + 
+			" scale(" + d3.event.scale + ")");
+	}
+};
 
 /* Board populator */
 
 Template.board.rendered = function () {
   var self = this;
-  self.node = self.find("svg");
+  self.node = self.find("svg#boardSVG");
 
 	function redrawBoxes() {
 		var boxesContext = new Meteor.deps.Context();
@@ -320,4 +354,6 @@ Template.board.rendered = function () {
 			redrawItems();
 		});
 	});
+	
+	setUpZoomOnBoard();	
 };
