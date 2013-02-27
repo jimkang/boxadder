@@ -1,7 +1,8 @@
 // This is https://gist.github.com/GerHobbelt/2653660 with a few changes.
 
 // onSetFieldFunction shoul a data param.
-function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
+function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
+	doOnEditStart, doOnEditEnd)
 { 
   this
     .on("mouseover", function() {
@@ -41,6 +42,16 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
 					onSetFieldFunctionCalled = true;
 				}					
 			}
+			
+			function stopEventBubbling(e) {
+        if (typeof(e.cancelBubble) !== 'undefined') // IE
+          e.cancelBubble = true;
+        if (e.stopPropagation)
+          e.stopPropagation();
+        e.preventDefault();
+			}
+			
+			var editCancelled = false;
 				
       var inp = frm
       .attr("x", parseInt(el.attr('x')) + formXOffset)
@@ -54,11 +65,19 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
           // make the form go away when you jump out (form loses focus) 
 					// or hit ENTER:
           .on("blur", function() {
+						console.log("blur!");
             var txt = inp.node().value;
-            d[field] = txt;							
-						callOnSetFieldFunction(d);
-            el.text(function(d) { return d[field]; });							
+            d[field] = txt;
+						if (editCancelled) {
+							// Reset this flag.
+							editCancelled = false;
+						}
+						else {
+							callOnSetFieldFunction(d);
+	            el.text(function(d) { return d[field]; });
+						}
 						removeForm();
+						doOnEditEnd();
           })
           .on("keypress", function() {
             // IE fix
@@ -66,13 +85,9 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
                 d3.event = window.event;
  
             var e = d3.event;
-            if (e.keyCode == 13)
+            if (e.keyCode == 13) // Enter
             {
-              if (typeof(e.cancelBubble) !== 'undefined') // IE
-                e.cancelBubble = true;
-              if (e.stopPropagation)
-                e.stopPropagation();
-              e.preventDefault();
+							stopEventBubbling(e);
  
               var txt = inp.node().value;
  
@@ -86,9 +101,27 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction)
 							removeForm();
             }
           })
+          .on("keyup", function() {
+            // IE fix
+            if (!d3.event)
+                d3.event = window.event;								 
+            var e = d3.event;
+						
+						console.log("e.keyCode", e.keyCode);
+						if (e.keyCode == 27) { // Esc
+							stopEventBubbling(e);
+							editCancelled = true;
+							console.log("Esc!");
+							removeForm();
+						}
+					})
 					.attr("size", inputSize)
-					// It's important to call focus *after* the value is set. This way,
-					// the value text gets highlighted.
-					.each(function() { this.focus(); });
+					.each(function() { 
+						// The text field draws weirdly if we're zoomed in.
+						doOnEditStart();
+						// It's important to call focus *after* the value is set. This way,
+						// the value text gets highlighted.
+						this.focus(); 
+					});
     });
 }

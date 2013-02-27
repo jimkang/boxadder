@@ -151,7 +151,8 @@ function syncAttrsToBoxes(boxGroupsSelection, boxes) {
 		function (box) {
 			// When the field is set, update the collection containing the data.
 			syncDatumToCollection(box, ['title'], Boxes, identityPassthrough);
-		});
+		},
+		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
 
 	var deleteButtonsSelection = boxGroupsSelection.selectAll("use");
 	deleteButtonsSelection.data(boxes, datumIdGetter)
@@ -228,7 +229,8 @@ function syncAttrsToItems(itemGroupSelection, items) {
 			// When the field is set, update the collection containing the data.
 			console.log("Saving title:", d.title);	
 			syncDatumToCollection(d, ['title'], Items, identityPassthrough);
-		}
+		},
+		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom
 	);
 	
 	setD3GroupAttrsWithProplist(titlesSelection, ["width", "height"]);
@@ -249,7 +251,8 @@ function syncAttrsToItems(itemGroupSelection, items) {
 			console.log("Saving score:", d.score);
 			syncDatumToCollection(d, ['score'], Items, 
 			function(val) { return parseInt(val); });
-		});
+		},
+		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
 		
 	// Set up the delete button.
 	itemGroupSelection.selectAll("use").data(items, datumIdGetter)
@@ -280,39 +283,57 @@ function makeSureItemsAreInFrontOfBoxes(svgNode) {
 	});	
 }
 
-function setUpZoomOnBoard() {
+var BoardZoomer = {
+	locked: false,
+	setUpZoomOnBoard: function() {		
+		// Make x and y scaling functions that just returns whatever is passed into 
+		// them (same domain and range).
+		var width = 768, height = 1024;
 	
-	// Make x and y scaling functions that just returns whatever is passed into 
-	// them (same domain and range).
-	var width = 768, height = 1024;
-	
-	var x = d3.scale.linear()
-    .domain([0, width])
-    .range([0, width]);
+		var x = d3.scale.linear()
+	    .domain([0, width])
+	    .range([0, width]);
 
-	var y = d3.scale.linear()
-    .domain([0, height])
-    .range([height, 0]);
+		var y = d3.scale.linear()
+	    .domain([0, height])
+	    .range([height, 0]);
 	
-	// When zoom and pan gestures happen inside of #boardSVG, have it call the 
-	// zoom function to make changes.
-	d3.select("#boardSVG").call(
-		d3.behavior.zoom().x(x).y(y).scaleExtent([0.0625, 4]).on("zoom", zoom)
-	);
+		// When zoom and pan gestures happen inside of #boardSVG, have it call the 
+		// zoom function to make changes.
+		d3.select("#boardSVG").call(
+			d3.behavior.zoom().x(x).y(y).scaleExtent([0.0625, 4]).on("zoom", zoom)
+		);
 	
-	var boxZoneSelection = d3.select("g.boxZone");
+		var boxZoneSelection = d3.select("g.boxZone");
 
-	// This function applies the zoom changes to the <g> element rather than the 
-	// <svg> element because <svg>s do not have a transform attribute. 
-	// The behavior is connected to the <svg> rather than the <g> because then
-	// dragging-to-pan doesn't work otherwise. Maybe something cannot be 
-	// transformed while it is receiving drag events?
-	function zoom() {		
-		boxZoneSelection.attr("transform", 
-			"translate(" + d3.event.translate + ")" + 
-			" scale(" + d3.event.scale + ")");
+		// This function applies the zoom changes to the <g> element rather than
+		// the <svg> element because <svg>s do not have a transform attribute. 
+		// The behavior is connected to the <svg> rather than the <g> because then
+		// dragging-to-pan doesn't work otherwise. Maybe something cannot be 
+		// transformed while it is receiving drag events?
+		function zoom() {
+			if (!BoardZoomer.locked) {
+				boxZoneSelection.attr("transform", 
+					"translate(" + d3.event.translate + ")" + 
+					" scale(" + d3.event.scale + ")");
+			}
+		}
+	},
+	resetZoom: function() {	
+		if (!BoardZoomer.locked) {
+			$('.boxZone').attr('transform', "translate(0, 0) scale(1)");
+		}
+	},
+	lockZoomToDefault: function() {
+		console.log("locked to default!");
+		BoardZoomer.resetZoom();
+		BoardZoomer.locked = true;
+	},
+	unlockZoom: function() {
+		console.log("unlocked!");
+		BoardZoomer.locked = false;
 	}
-};
+}
 
 /* Board populator */
 
@@ -355,5 +376,5 @@ Template.board.rendered = function () {
 		});
 	});
 	
-	setUpZoomOnBoard();	
+	BoardZoomer.setUpZoomOnBoard();	
 };
