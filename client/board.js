@@ -356,24 +356,25 @@ Template.board.rendered = function () {
 		itemsContext.run(function() {
 			var items = Items.find().fetch();
 			syncNodesToItems(self.node, items);
+			
+			// This will get rid of the loading message.
+		  Session.set("loadingMessage", null);			
 		});
 	};
 
 	Meteor.autorun(function() {
 		// This subscription keeps the board list, which also uses the boards
 		// collection, updated reactively.
-	  Meteor.subscribe('boards', {boardId: Session.get("currentBoard")});
+	  Meteor.subscribe('boards', {boardId: Session.get("currentBoard")}, 
+			function() { Session.set("loadingMessage", "Loading board..."); });
 		
-	  Meteor.subscribe('boxes', {boardId: Session.get("currentBoard")}, function() {
-			// Set up the boxes.			
-			redrawBoxes();
-    });	
+	  Meteor.subscribe('boxes', {boardId: Session.get("currentBoard")}, 
+			function() { redrawBoxes(); });	
 			
 		// Set up the items. (And set them up again each time they or the current
 		// board are updated.)
-    Meteor.subscribe('items', {boardId: Session.get("currentBoard")}, function() {
-			redrawItems();
-		});
+    Meteor.subscribe('items', {boardId: Session.get("currentBoard")}, 
+			function() { redrawItems(); });
 	});
 	
 	BoardZoomer.setUpZoomOnBoard();	

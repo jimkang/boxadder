@@ -79,6 +79,10 @@ body {
 	float: right;
 }
 
+.boardListItem {
+	display: block;
+	height: 44px;	
+}
 .boardListItemLabel {
 	font-size: 1.2em;
 }
@@ -123,4 +127,12 @@ body {
 .explanation {
 	font-size: 0.95em;
 	background-color: #fc8;
+}
+
+.loading {
+	font-weight: bold;
+	font-style: italic;
+	background-color: #fe4;
+	padding: 10px 10px 10px 10px;
+	margin: 4px 4px 4px 4px;
 }

@@ -142,7 +142,9 @@
 	<br />
 	<div id="boardList">
 		{{#each boards}}
-			<div class="boardListItem {{selectedClass}}">
+			{{! onclick is there so that Mobile Safari will understand right away 
+				that this is tappable.}}
+			<div class="boardListItem {{selectedClass}}" onclick="void(0)">
 				<span class="boardListItemLabel">{{name}}</span>
 			</div>
 		{{/each}}
@@ -152,6 +154,10 @@
 <template name="boardMetadataSection">	
   {{#if error}}
     <div class="alert alert-error">{{error}}</div>
+  {{/if}}
+
+  {{#if loadingMessage}}
+    <div class="alert loading">{{loadingMessage}}</div>
   {{/if}}
 	
 	{{#if currentBoardIsSet}}

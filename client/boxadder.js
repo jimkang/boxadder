@@ -206,6 +206,10 @@ Template.boardMetadataSection.error = function () {
   return Session.get("createError");
 };
 
+Template.boardMetadataSection.loadingMessage = function () {
+  return Session.get("loadingMessage");
+};
+
 Template.deleteBoard.board = function() {
 	return Boards.findOne(Session.get('currentBoard'));
 }
