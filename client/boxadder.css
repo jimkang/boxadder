@@ -136,3 +136,8 @@ body {
 	padding: 10px 10px 10px 10px;
 	margin: 4px 4px 4px 4px;
 }
+
+.rightJustified {
+	float: right;
+	margin-right: 1.5em;
+}

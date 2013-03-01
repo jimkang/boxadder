@@ -83,6 +83,14 @@ Template.boardControlBar.boardIsWritable = function() {
 	return boardIsWritable();
 };
 
+Template.boardControlBar.currentBoardNotSet = function() {
+	return !Session.get('currentBoard');
+};
+
+Template.boardControlBar.currentBoardIsSet = function() {
+	return Session.get('currentBoard');
+};
+
 // TODO: Find how to share a helper among the templates.
 
 	

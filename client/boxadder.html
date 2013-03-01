@@ -71,7 +71,7 @@
   </div>
 </template>
 
-<template name="boardControlBar">
+<template name="boardControlBar">	
   {{#if boardIsWritable}}
 	  <span id="new-item-box">
 	    <input type="button" class="addNewItem" value="Add Item" />
@@ -79,12 +79,24 @@
 		
 		<span>
 			<button type="button" class="addNewBox">Add Box</button>
-		</span>
-				
-		<p><span class="explanation">Boxadder calculates the sum of items in boxes. As you change things, other people looking at the same board will see those changes.</span></p>
-		<p><span class="explanation">Add items and boxes with the buttons, then move them around and edit their values. Use the mouse wheel or pinch gestures to zoom in and out and click and drag on empty spaces to pan around.</span></p>
-
+		</span>				
 	{{/if}}
+	<span {{#if currentBoardIsSet}}class="rightJustified"{{/if}}>
+		<a href="mailto:jimkang@ghostcrabworkshop.com?subject=Boxadder" target="_blank">
+			<button type="button" class="questionsButton">Questions/Comments</button>
+		</a>
+	</span>				
+	
+	<p><span class="explanation">Boxadder calculates the sum of items in boxes. As you change things, other people looking at the same board will see those changes.
+	{{#if currentBoardNotSet}}
+	Select a board from the list to get started or create a new one.
+	{{/if}}
+	</span></p>
+	
+	{{#if boardIsWritable}}
+		<p><span class="explanation">Add items and boxes with the buttons, then move them around and edit their values. Use the mouse wheel or pinch gestures to zoom in and out and click and drag on empty spaces to pan around.</span></p>
+	{{/if}}
+	
 </template>
 
 <template name="boardAdminSection">
