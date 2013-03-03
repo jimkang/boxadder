@@ -29,37 +29,25 @@
   <div class="board">
       <svg width="768" height="1024" id="boardSVG">
 			  <defs>
-					  <path id="deleteButtonPath" d="M 0 0 L 12 12 M 12 0 L 0 12"
-						fill="none" stroke="#282828" stroke-width="7" stroke-opacity="0.5"
-						onclick="console.log(this)">
-							<!-- <animate attributeName="d" from="M 0 0 L 20 20 M 20 0 L 0 20"
-							 to="M -2 -2 L 22 22 M 22 -2 L -2 22" 
-							 begin="click" dur="0.05s" fill="freeze" />
-							<animate attributeName="stroke-width" from="8" to="10" 
-							 begin="click" dur="0.05s" fill="freeze" />
-							<animate attributeName="stroke-opacity" from="0.5" to="1.0" 
-							 begin="click" dur="0.05s" fill="freeze" />	-->
-						
-					 </path>
-				 </symbol>
+				  <path id="deleteButtonPath" d="M 0 0 L 13 13 M 13 0 L 0 13"
+					fill="none" stroke="#282828" stroke-width="7" stroke-opacity="0.5" 
+					class="deleteButton"/>
+					
+					<mask id="resizeGripStripeMask">
+						<path 
+						d="M 15 1 L 1 15 M 15 5 L 5 15 M 15 9 L 9 15 M 15 13 L 13 15" 
+						stroke-width="2" stroke="white" stroke-linecap="round" />
+					</mask>
+					
+					<!-- Making resizeGrip a rect instead of the stripes path so that 
+					users don't have to click on one of the stripes in order to drag it.
+					-->
+					<rect id="resizeGrip" class="resize-handle" width="24" height="24"
+					fill-opacity="0.25" fill="black" mask="url(#resizeGripStripeMask)" />
+
 			  </defs>
 				
         <g class="boxZone">
-										
-					<!-- <use x="100" y="100" xlink:href="#deleteButtonPath">
-					</use> -->
-				  <!-- <path id="closeButtonPath" d="M 0 0 L 20 20 M 20 0 L 0 20"
-					fill="none" stroke="#282828" stroke-width="8" stroke-opacity="0.7"
-					onclick="console.log(this)" x="100" y="100">
-						<animate attributeName="d" from="M 0 0 L 20 20 M 20 0 L 0 20"
-						 to="M -2 -2 L 22 22 M 22 -2 L -2 22" 
-						 begin="mousedown" dur="0.05s" fill="freeze" />
-						<animate attributeName="stroke-width" from="8" to="10" 
-						 begin="mousedown" dur="0.05s" fill="freeze" />
-						<animate attributeName="stroke-opacity" from="0.5" to="1.0" 
-						 begin="mousedown" dur="0.05s" fill="freeze" />						
-				 </path> -->
-					
         </g>
       </svg>
   </div>
@@ -79,7 +67,7 @@
 		
 		<span>
 			<button type="button" class="addNewBox">Add Box</button>
-		</span>				
+		</span>
 	{{/if}}
 	<span {{#if currentBoardIsSet}}class="rightJustified"{{/if}}>
 		<a href="mailto:jimkang@ghostcrabworkshop.com?subject=Boxadder" target="_blank">

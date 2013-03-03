@@ -3,17 +3,64 @@
 function identityPassthrough(obj) { return obj; }
 function datumIdGetter(d) { return d._id; }
 
-function setD3GroupAttrsWithProplist(group, propnames) {
-	// We are running all these methods (attr, append, etc.) on the group
-	// not just one node. Keep it in mind.
+function setD3SelAttrsPreservingClass(selection, namesAndValuesDict) {
+	selection.each(function(d, i) {
+		var classes = this.classList;
+		for (var name in namesAndValuesDict) {
+			this.setAttribute(name, namesAndValuesDict[name](d));
+		}
+		this.className = classes.toString();
+	});
+	return selection;
+}
+
+function setSelAttrsWithDataArray(selection, dataArray, attrSetterDict) {
+	selection.data(dataArray, datumIdGetter);
+	
+	return setD3SelAttrsPreservingClass(selection, attrSetterDict);
+};
+
+// For each element in the selection, set its attributes (named by propnames) 
+// to the values of the .data() members with matching names. e.g. It will set 
+// element's "x" attr to data.x.
+// It will preserve the CSS class.
+function syncD3SelAttrsToDataMembersWithPropnames(selection, propnames) {
+	var namesAndValuesDict = {};
+
+	// There's no block scope in javascript, only function scope. So, the for 
+	// loop's scope is no different from
+	// syncD3SelAttrsToDataMembersWithPropnames's scope. 
+	// propname, then, will change during each iteration and will ultimately be
+	// whatever it is on the last iteration. If a function is defined in the for
+	// loop, every time it is called, propname will always be that last iteration
+	// value, whereas it needs to be a value corresponding to each iteration.
+	// Therefore, propValueSettingFunction is required to capture the value of 
+	// propname at each iteration on behalf of the anonymous function that uses 
+	// propname.
+
+	function propValueSettingFunction(propname) {
+		return function (obj) { return obj[propname]; };
+	}
+	
 	for (var i = 0; i < propnames.length; ++i) {
 		var propname = propnames[i];
-		group.attr(propname, function (obj) { 
-			return obj[propname];
-		});
-	}
-	return group;
+		namesAndValuesDict[propname] = propValueSettingFunction(propname);
+	}	
+	setD3SelAttrsPreservingClass(selection, namesAndValuesDict);
+	return selection;
 };
+
+function syncSelAttrsToDataArray(selection, dataArray, attrArray) {
+	selection.data(dataArray, datumIdGetter);
+	
+	return syncD3SelAttrsToDataMembersWithPropnames(selection, attrArray);
+};
+
+function syncCommonRectAttrsToDataArray(selection, dataArray) {
+	return syncSelAttrsToDataArray(selection, dataArray,
+		["_id", "x", "y", "width", "height"]);
+};
+
 
 // valueCleaner is a function that takes a value and returns it cleaned, if 
 // necessary.
@@ -35,16 +82,10 @@ function syncDatumToCollection(datum, fieldArray, collection, valueCleaner) {
 		});	
 }
 
-function syncCommonRectAttrs(group, cssClass) {
-	return setD3GroupAttrsWithProplist(group, 
-		["_id", "x", "y", "width", "height"])
-	// Setting attr seems to clear everything that's not explicitly set, so we 
-	// need to re-set the class.
-	.attr("class", cssClass);
-};
 
 function appendResizeHandlesToGroups(groupsSelection, handleSideSize) {
-	var appendedSelection = groupsSelection.append("rect")
+	var appendedSelection = groupsSelection.append("use")
+	.attr("xlink:href", "#resizeGrip")
 	.attr("fill", "gray")
 	.attr("width", handleSideSize)
 	.attr("height", handleSideSize)
@@ -55,22 +96,24 @@ function appendResizeHandlesToGroups(groupsSelection, handleSideSize) {
 }
 
 function updateResizeHandlesInGroups(groupsSelection, handleSideSize, dataArray) {
-	var resizeHandlesSelection = groupsSelection.selectAll("rect.resize-handle");
-	resizeHandlesSelection.data(dataArray, datumIdGetter)
-	.attr("x", function (box) { return box.x + box.width - handleSideSize; })
-	.attr("y", function (box) { return box.y + box.height - handleSideSize; })
-	.classed("resize-handle", true);
+	setSelAttrsWithDataArray(groupsSelection.selectAll("use.resize-handle"), 
+	dataArray, {
+		x: function(d) { return d.x + d.width - handleSideSize; },
+		y: function(d) { return d.y + d.height - handleSideSize; },
+		width: function(d) { return handleSideSize; },
+		height: function(d) { return handleSideSize; }		
+	});
 }
 
 
 function syncNodesToBoxes(svgNode, boxes) {	
 	// Set up the <g> elements for the boxes.
-  var boxGroupsSelection = 
+  var boxGroupsSel = 
 		d3.select(svgNode).select(".boxZone").selectAll("g .box")
     	.data(boxes, datumIdGetter);
 
   // Sync the <g> elements to the box records. Add the drag behavior.
-	boxGroupsSelection.enter().append("g").classed("box", true)
+	boxGroupsSel.enter().append("g").classed("box", true)
 	.call(addGroupDragBehavior)
 	// Append the rect first so that it is the furthest back, z-order-wise.
 	.call(function (groupSelection) {
@@ -79,7 +122,7 @@ function syncNodesToBoxes(svgNode, boxes) {
 		.attr("fill", function(d) { return "#210"; })
 		.attr("fill-opacity", function(d) { return 0.05; })
 		.attr("stroke", function (d) { return "red"; })
-		.classed("bounds-background", true);			
+		.classed("bounds-background", true);
 	})
 	// Append the sum background.
 	.call(function (groupSelection) {		
@@ -116,24 +159,25 @@ function syncNodesToBoxes(svgNode, boxes) {
 	})
 	// Append the resize handle.
 	.call(function (groupSelection) {
-		appendResizeHandlesToGroups(groupSelection, 44);
+		appendResizeHandlesToGroups(groupSelection, 20);
 	})	
 	// Append the delete button, which is defined in a <def> and instantiated
 	// with <use>.
-	.append("use")	
+	.append("use")
 		.attr("_id", function (box) { return box._id; })
 		.attr("xlink:href", "#deleteButtonPath")
 		.on("click", function (d, i) {
 			// Delete this box.
 			Boxes.remove(d._id);
-		});	
+		})
+		.classed("deleteButton", true);
 
-	boxGroupsSelection.exit().remove();
+	boxGroupsSel.exit().remove();
 	
-	boxGroupsSelection.select("text").text(
+	boxGroupsSel.select("text").text(
 		function (data) { return sumForBox(data); });
 	
-	syncAttrsToBoxes(boxGroupsSelection, boxes);
+	syncAttrsToBoxes(boxGroupsSel, boxes);
 	makeSureItemsAreInFrontOfBoxes(svgNode);
 }
 
@@ -141,36 +185,34 @@ function syncNodesToBoxes(svgNode, boxes) {
 // e.g. Other instance of client moves a box somewhere and x and y are updated
 // on an existing box element group although no new box element group needs to
 // be created.
-function syncAttrsToBoxes(boxGroupsSelection, boxes) {
+function syncAttrsToBoxes(boxGroupsSel, boxes) {
 	
-	var bgRectsSelection = boxGroupsSelection.selectAll("rect.bounds-background");
-	bgRectsSelection.data(boxes, datumIdGetter);
-	syncCommonRectAttrs(bgRectsSelection, "bounds-background");
+	var bgRectsSelection = boxGroupsSel.selectAll("rect.bounds-background");
+	syncCommonRectAttrsToDataArray(bgRectsSelection, boxes);
 
-	var sumBoxesSelection = boxGroupsSelection.selectAll("rect.sum-background");
-	sumBoxesSelection.data(boxes, datumIdGetter)
-	.attr("x", function (box) { return box.x; })
-	.attr("y", function (box) { return box.y + box.height - 44; })
-	.classed("sum-background", true);
+	setSelAttrsWithDataArray(boxGroupsSel.selectAll("rect.sum-background"), boxes, {
+		x: function (box) { return box.x; },
+		y: function (box) { return box.y + box.height - 44; }
+	});
 
-	var sumTextsSelection = boxGroupsSelection.selectAll("text.sum");
-	sumTextsSelection.data(boxes, datumIdGetter)
-	.attr("x", function (box) { return box.x + 8; })
-	.attr("y", function (box) { return box.y + box.height - 24/2; })
-	.classed("sum", true);
+	setSelAttrsWithDataArray(boxGroupsSel.selectAll("text.sum"), boxes, {
+		x: function (box) { return box.x + 8; },
+		y: function (box) { return box.y + box.height - 24/2; }
+	});
+
+	setSelAttrsWithDataArray(boxGroupsSel.selectAll("rect.box-title-background"), boxes, {
+		x: function (box) { return box.x; },
+		y: function (box) { return box.y; }
+	});
 	
-	var titleBoxesSelection = boxGroupsSelection.selectAll("rect.box-title-background");
-	titleBoxesSelection.data(boxes, datumIdGetter)
-	.attr("x", function (box) { return box.x; })
-	.attr("y", function (box) { return box.y; })
-	.classed("box-title-background", true);
+	var titleTextsSelection = boxGroupsSel.selectAll("text.box-title");
 
-	var titleTextsSelection = boxGroupsSelection.selectAll("text.box-title");
-	titleTextsSelection.data(boxes, datumIdGetter)
-	.text(function (box) { return box.title; })
-	.attr("x", function (box) { return box.x + 8; })
-	.attr("y", function (box) { return box.y + 20; })
-	.classed("box-title", true)
+	setSelAttrsWithDataArray(titleTextsSelection, boxes, {
+		x: function (box) { return box.x + 8; },
+		y: function (box) { return box.y + 20; }
+	});
+
+	titleTextsSelection.text(function (box) { return box.title; })
 	.call(makeEditable, "title", 20, 0, 
 		function (box) {
 			// When the field is set, update the collection containing the data.
@@ -178,12 +220,12 @@ function syncAttrsToBoxes(boxGroupsSelection, boxes) {
 		},
 		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
 
-	updateResizeHandlesInGroups(boxGroupsSelection, 44, boxes);
+	updateResizeHandlesInGroups(boxGroupsSel, 20, boxes);
 
-	var deleteButtonsSelection = boxGroupsSelection.selectAll("use");
-	deleteButtonsSelection.data(boxes, datumIdGetter)
-	.attr("x", function (box) { return box.x + box.width - 16; })
-	.attr("y", function (box) { return box.y + 4; });
+	setSelAttrsWithDataArray(boxGroupsSel.selectAll("use.deleteButton"), boxes, {
+		x: function (box) { return box.x + box.width - 16; },
+		y: function (box) { return box.y + 4; }
+	});
 }
 
 function syncNodesToItems(svgNode, items) {
@@ -219,11 +261,13 @@ function syncNodesToItems(svgNode, items) {
 		groupSelection.append("text").classed("score", true); 
 	})
 	.call(function (groupSelection) {
-		appendResizeHandlesToGroups(groupSelection, 22);		
+		appendResizeHandlesToGroups(groupSelection, 20);		
 	})
 	// Append the delete button, which is defined in a <def> and instantiated
 	// with <use>.
-	.call(function (groupSelection) { groupSelection.append("use") });
+	.call(function (groupSelection) { 
+		groupSelection.append("use").classed("deleteButton", true); 
+	});
 	
 	itemGroupSelection.exit().remove();
 	
@@ -237,10 +281,9 @@ function syncAttrsToItems(itemGroupSelection, items) {
 	
 	// TODO: Refactor sub-<g> element setup.
 	var bgRectSelection = itemGroupSelection.selectAll("rect.bounds-background");
-	bgRectSelection.data(items, datumIdGetter)
-	.attr("fill", function(d) { return "green"; })
+  syncCommonRectAttrsToDataArray(bgRectSelection, items);
+	bgRectSelection.attr("fill", function(d) { return "green"; })
 	.attr("fill-opacity", function(d) { return 0.7; });
-  syncCommonRectAttrs(bgRectSelection, "bounds-background");
 	
 	// Set up the title label.
 	// d3 selectors are slightly different from jQuery's: No spaces for 
@@ -262,7 +305,7 @@ function syncAttrsToItems(itemGroupSelection, items) {
 		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom
 	);
 	
-	setD3GroupAttrsWithProplist(titlesSelection, ["width", "height"]);
+	syncD3SelAttrsToDataMembersWithPropnames(titlesSelection, ["width", "height"]);
 	
 	// Set up the score field.
 	var scoresSelection = itemGroupSelection.selectAll("text.score");
@@ -283,17 +326,18 @@ function syncAttrsToItems(itemGroupSelection, items) {
 		},
 		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
 	
-	updateResizeHandlesInGroups(itemGroupSelection, 22, items);
+	updateResizeHandlesInGroups(itemGroupSelection, 20, items);
 	
 	// Set up the delete button.
-	itemGroupSelection.selectAll("use").data(items, datumIdGetter)
+	itemGroupSelection.selectAll("use.deleteButton").data(items, datumIdGetter)
 		.attr("xlink:href", "#deleteButtonPath")
 		.attr("x", function (item) { return item.x + item.width - 16; })
 		.attr("y", function (item) { return item.y + 4; })
 		.on("click", function (d, i) {
 			// Delete this item.
 			Items.remove(d._id);
-		});		
+		})
+		.classed("deleteButton", true);
 }
 
 function makeSureItemsAreInFrontOfBoxes(svgNode) {
