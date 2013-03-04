@@ -149,23 +149,25 @@ function syncAttrsToBoxes(boxGroupsSel, boxes) {
 	});
 }
 
-function syncNodesToItems(svgNode, items) {
-	var boxZoneSelection = d3.select(svgNode).select(".boxZone");
-	
-	// Sync the <g>s and the data.
-	
-	// We need to bind the data to the children of the g as well as the parent 
-	// g itself. That way we can run code that sets a child rect's attributes 
-	// using that data.
-	// To do that, the callback given to data() returns the object itself, and 
-	// data() then binds the children of the object and so on.
-	
+// Creates/destroys <g> hierarchies to match the data, then init and update 
+// them.
+function matchElementsToItems(svgNode, items) {
+	var boxZoneSelection = d3.select(svgNode).select(".boxZone");	
   var itemGroupSel = 
 		boxZoneSelection.selectAll("g .item").data(items, datumIdGetter);
 	
-	itemGroupSel.enter().append("g").classed("item", true)
+	var appendedGroupSel = itemGroupSel.enter().append("g").classed("item", true);
+	initItemGroupSelection(appendedGroupSel);	
+	itemGroupSel.exit().remove();
+	
+	updateItemGroupSelection(itemGroupSel, items);
+	makeSureItemsAreInFrontOfBoxes(svgNode);	
+}
+
+// Sets up a <g> hierarchy right after it is created.
+function initItemGroupSelection(itemGroupSel) {
 	// Add the dragging handler.
-	.call(addGroupDragBehavior)
+	itemGroupSel.call(addGroupDragBehavior)
 	// Append the rect first so that it is the furthest back, z-order-wise.
 	.call(function (groupSelection) {
 		var appendedSelection = groupSelection.append("rect")
@@ -187,20 +189,18 @@ function syncNodesToItems(svgNode, items) {
 	// Append the delete button, which is defined in a <def> and instantiated
 	// with <use>.
 	.call(function (groupSelection) { 
-		groupSelection.append("use").classed("deleteButton", true); 
+		groupSelection.append("use").attr({
+			'xlink:href': "#deleteButtonPath", fill: 'white'
+		})
+		.classed("deleteButton", true);
 	});
-	
-	itemGroupSel.exit().remove();
-	
-	syncAttrsToItems(itemGroupSel, items);
-	makeSureItemsAreInFrontOfBoxes(svgNode);	
 }
 
-function syncAttrsToItems(itemGroupSel, items) {		
+// Updates <g> hierarchies to match the data in items. These changes apply to 
+// already created hierarchies, unlike the changes in initItemGroupSelection.
+function updateItemGroupSelection(itemGroupSel, items) {		
 	
-	function textElementYPos(item) { return item.y + item.height/2 + 4; }
-	
-	// TODO: Refactor sub-<g> element setup.	
+	function textElementYPos(item) { return item.y + item.height/2 + 4; }	
 	
 	var bgRectSelection = itemGroupSel.selectAll("rect.bounds-background");
   syncCommonRectAttrsToDataArray(bgRectSelection, items);
@@ -252,10 +252,8 @@ function syncAttrsToItems(itemGroupSel, items) {
 	// Set up the delete button.
 	// Set up the score field.
 	setSelAttrsWithDataArray(itemGroupSel.selectAll("use.deleteButton"), items, {
-		'xlink:href': function (item) { return "#deleteButtonPath"; },
 		x: function (item) { return item.x + item.width - 16; },
-		y: function (item) { return item.y + 4; },
-		fill: function(item) { return 'white'; }
+		y: function (item) { return item.y + 4; }
 	})
 	.on("click", function (d, i) { Items.remove(d._id); });
 }
@@ -350,7 +348,7 @@ Template.board.rendered = function () {
 		itemsContext.on_invalidate(redrawItems);
 		itemsContext.run(function() {
 			var items = Items.find().fetch();
-			syncNodesToItems(self.node, items);
+			matchElementsToItems(self.node, items);
 			
 			// This will get rid of the loading message.
 		  Session.set("loadingMessage", null);			
