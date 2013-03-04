@@ -27,15 +27,27 @@ function updateResizeHandlesInGroups(groupsSelection, handleSideSize, dataArray)
 	});
 }
 
-function syncNodesToBoxes(svgNode, boxes) {	
+
+// Creates/destroys <g> hierarchies to match the data, then inits and updates 
+// them.
+function matchElementsToBoxes(svgNode, boxes) {	
 	// Set up the <g> elements for the boxes.
   var boxGroupsSel = 
 		d3.select(svgNode).select(".boxZone").selectAll("g .box")
     	.data(boxes, datumIdGetter);
 
   // Sync the <g> elements to the box records. Add the drag behavior.
-	boxGroupsSel.enter().append("g").classed("box", true)
-	.call(addGroupDragBehavior)
+	var appendedGroupSel = boxGroupsSel.enter().append("g").classed("box", true);	
+	initBoxGroupSelect(appendedGroupSel);
+	boxGroupsSel.exit().remove();
+		
+	updateBoxGroupSelection(boxGroupsSel, boxes);
+	makeSureItemsAreInFrontOfBoxes(svgNode);
+}
+
+// Sets up a <g> hierarchy right after it is created.
+function initBoxGroupSelect(boxGroupSel) {
+	boxGroupSel.call(addGroupDragBehavior)
 	// Append the rect first so that it is the furthest back, z-order-wise.
 	.call(function (groupSelection) {
 		var appendedSelection = groupSelection.append("rect")
@@ -91,22 +103,17 @@ function syncNodesToBoxes(svgNode, boxes) {
 			// Delete this box.
 			Boxes.remove(d._id);
 		})
-		.classed("deleteButton", true);
-
-	boxGroupsSel.exit().remove();
-	
-	boxGroupsSel.select("text").text(
-		function (data) { return sumForBox(data); });
-	
-	syncAttrsToBoxes(boxGroupsSel, boxes);
-	makeSureItemsAreInFrontOfBoxes(svgNode);
+		.classed("deleteButton", true);	
 }
 
 // Here, update the attributes that may change after an element is appended.
 // e.g. Other instance of client moves a box somewhere and x and y are updated
 // on an existing box element group although no new box element group needs to
 // be created.
-function syncAttrsToBoxes(boxGroupsSel, boxes) {
+function updateBoxGroupSelection(boxGroupsSel, boxes) {
+	
+	// Update the sums.
+	boxGroupsSel.select("text").text(function (data) { return sumForBox(data); });
 	
 	var bgRectsSelection = boxGroupsSel.selectAll("rect.bounds-background");
 	syncCommonRectAttrsToDataArray(bgRectsSelection, boxes);
@@ -149,7 +156,7 @@ function syncAttrsToBoxes(boxGroupsSel, boxes) {
 	});
 }
 
-// Creates/destroys <g> hierarchies to match the data, then init and update 
+// Creates/destroys <g> hierarchies to match the data, then inits and updates 
 // them.
 function matchElementsToItems(svgNode, items) {
 	var boxZoneSelection = d3.select(svgNode).select(".boxZone");	
@@ -339,7 +346,7 @@ Template.board.rendered = function () {
 		boxesContext.on_invalidate(redrawBoxes);
 		boxesContext.run(function() {
 			var boxes = Boxes.find().fetch();
-			syncNodesToBoxes(self.node, boxes);
+			matchElementsToBoxes(self.node, boxes);
 		});
 	};
 
