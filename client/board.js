@@ -239,10 +239,10 @@ function syncNodesToItems(svgNode, items) {
 	// To do that, the callback given to data() returns the object itself, and 
 	// data() then binds the children of the object and so on.
 	
-  var itemGroupSelection = 
+  var itemGroupSel = 
 		boxZoneSelection.selectAll("g .item").data(items, datumIdGetter);
 	
-	itemGroupSelection.enter().append("g").classed("item", true)
+	itemGroupSel.enter().append("g").classed("item", true)
 	// Add the dragging handler.
 	.call(addGroupDragBehavior)
 	// Append the rect first so that it is the furthest back, z-order-wise.
@@ -269,75 +269,74 @@ function syncNodesToItems(svgNode, items) {
 		groupSelection.append("use").classed("deleteButton", true); 
 	});
 	
-	itemGroupSelection.exit().remove();
+	itemGroupSel.exit().remove();
 	
-	syncAttrsToItems(itemGroupSelection, items);
+	syncAttrsToItems(itemGroupSel, items);
 	makeSureItemsAreInFrontOfBoxes(svgNode);	
 }
 
-function syncAttrsToItems(itemGroupSelection, items) {		
+function syncAttrsToItems(itemGroupSel, items) {		
 	
 	function textElementYPos(item) { return item.y + item.height/2 + 4; }
 	
-	// TODO: Refactor sub-<g> element setup.
-	var bgRectSelection = itemGroupSelection.selectAll("rect.bounds-background");
+	// TODO: Refactor sub-<g> element setup.	
+	
+	var bgRectSelection = itemGroupSel.selectAll("rect.bounds-background");
   syncCommonRectAttrsToDataArray(bgRectSelection, items);
-	bgRectSelection.attr("fill", function(d) { return "green"; })
-	.attr("fill-opacity", function(d) { return 0.7; });
+	setD3SelAttrsPreservingClass(bgRectSelection, {
+		fill: function(d) { return "green"; }, 
+		'fill-opacity': function(d) { return 0.7; }
+	});
 	
 	// Set up the title label.
 	// d3 selectors are slightly different from jQuery's: No spaces for 
 	// multiple specifiers that are to be ANDed.
-	var titlesSelection = itemGroupSelection.selectAll("text.itemtitle");
+	var titlesSelection = itemGroupSel.selectAll("text.itemtitle");
 	titlesSelection.data(items, datumIdGetter);
 	
-	titlesSelection
+	setSelAttrsWithDataArray(itemGroupSel.selectAll("text.itemtitle"), items, {
+		x: function (item) { return item.x + 10; },
+		y: function (item) { return textElementYPos(item); },
+		width: function (item) { return item.width; },
+		height: function (item) { return item.height; },
+		fill: function(item) { return 'white'; }
+	})
 	.text(function (d) { return d.title; })
-	.attr("x", function (item) { return item.x + 10; })
-	.attr("y", function (item) { return textElementYPos(item); })
-	.attr("fill", function (item) { return "white"; })
 	.call(makeEditable, "title", 20, 0, 
 		function (d) {
 			// When the field is set, update the collection containing the data.
-			console.log("Saving title:", d.title);	
 			syncDatumToCollection(d, ['title'], Items, identityPassthrough);
 		},
 		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom
 	);
 	
-	syncD3SelAttrsToDataMembersWithPropnames(titlesSelection, ["width", "height"]);
-	
 	// Set up the score field.
-	var scoresSelection = itemGroupSelection.selectAll("text.score");
-	scoresSelection.data(items, datumIdGetter);
-	
-	scoresSelection
-		.text(function (d) { return d.score; })
-		.attr("x", function (item) { return item.width - 64 + item.x; })
-		.attr("y", function (item) { return textElementYPos(item); })
-		.attr("width", function (item) { return 100; })
-		.attr("height", function (item) { return item.height - 4; })
-		.attr("fill", function (item) { return "white"; })
-		.call(makeEditable, "score", 4, -18, function (d) {
-			// When the field is set, update the collection containing the data.
-			console.log("Saving score:", d.score);
-			syncDatumToCollection(d, ['score'], Items, 
+	setSelAttrsWithDataArray(itemGroupSel.selectAll("text.score"), items, {
+		x: function (item) { return item.width - 64 + item.x; },
+		y: function (item) { return textElementYPos(item); },
+		width: function (item) { return 100; },
+		height: function (item) { return item.height - 4; },
+		fill: function(item) { return 'white'; }
+	})
+	.text(function (d) { return d.score; })
+	.call(makeEditable, "score", 4, -18, function (d) {
+		// When the field is set, update the collection containing the data.
+		syncDatumToCollection(d, ['score'], Items, 
 			function(val) { return parseInt(val); });
-		},
-		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
+	},
+	BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
 	
-	updateResizeHandlesInGroups(itemGroupSelection, 20, items);
+	updateResizeHandlesInGroups(itemGroupSel, 20, items);
 	
 	// Set up the delete button.
-	itemGroupSelection.selectAll("use.deleteButton").data(items, datumIdGetter)
-		.attr("xlink:href", "#deleteButtonPath")
-		.attr("x", function (item) { return item.x + item.width - 16; })
-		.attr("y", function (item) { return item.y + 4; })
-		.on("click", function (d, i) {
-			// Delete this item.
-			Items.remove(d._id);
-		})
-		.classed("deleteButton", true);
+	// Set up the score field.
+	setSelAttrsWithDataArray(itemGroupSel.selectAll("use.deleteButton"), items, {
+		'xlink:href': function (item) { return "#deleteButtonPath"; },
+		x: function (item) { return item.x + item.width - 16; },
+		y: function (item) { return item.y + 4; },
+		fill: function(item) { return 'white'; }
+	})
+	.on("click", function (d, i) { Items.remove(d._id); });
 }
 
 function makeSureItemsAreInFrontOfBoxes(svgNode) {
