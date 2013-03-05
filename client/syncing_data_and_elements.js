@@ -11,7 +11,9 @@ function setD3SelAttrsPreservingClass(selection, namesAndValuesDict) {
 		for (var name in namesAndValuesDict) {
 			this.setAttribute(name, namesAndValuesDict[name](d));
 		}
-		this.className = classes.toString();
+		if (classes) {
+			this.className = classes.toString();
+		}
 	});
 	return selection;
 }
