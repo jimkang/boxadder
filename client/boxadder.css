@@ -98,6 +98,13 @@ body {
 .sum {
 	font-weight: bold;
 	font-size: 1.8em;
+	fill: #f80;
+}
+
+.box-title {
+	font-weight: 500;
+	font-size: 1.4em;
+	fill: #8c4;
 }
 
 .visibility-label {

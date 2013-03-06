@@ -52,42 +52,45 @@ function initBoxGroupSelect(boxGroupSel) {
 	.call(function (groupSelection) {
 		var appendedSelection = groupSelection.append("rect")
 		.attr("_id", function(box) { return box._id; })
-		.attr("fill", function(d) { return "#210"; })
-		.attr("fill-opacity", function(d) { return 0.05; })
-		.attr("stroke", function (d) { return "red"; })
+		.attr("fill", "#210").attr("fill-opacity", 0.05)
+		.attr("stroke", "black").attr("stroke-width", 2).attr("stroke-opacity", 0.4)
+		.attr("rx", 5)
 		.classed("bounds-background", true);
 	})
 	// Append the sum background.
-	.call(function (groupSelection) {		
-		var appendedSelection = groupSelection.append("rect")
-		.attr("stroke", "red").attr("fill", "orange")
-		.attr("width", function (box) { return 100; })
-		.attr("height", function (box) { return 44; })
-		.classed("sum-background", true);
-	})
+	// .call(function (groupSelection) {		
+	// 	var appendedSelection = groupSelection.append("rect")
+	// 	.attr("fill", "orange")
+	// 	.attr("width", 100)
+	// 	.attr("height", 44)
+	// 	.attr("stroke", "#f77").attr("stroke-width", 2)
+	// 	.attr("rx", 5)
+	// 	.classed("sum-background", true);
+	// })
 	// Append the sum text.
 	.call(function (groupSelection) {		
 		var appendedSelection = groupSelection.append("text")
-		.attr("width", function (box) { return 84; })
-		.attr("height", function (box) { return 24; })
-		.attr("fill", function (box) { return "white"; })
+		.attr("width", 84)
+		.attr("height", 24)
+		// .attr("fill", "gray")
 		.classed("sum", true);
 	})
-	// Append the title background.
-	.call(function (groupSelection) {		
-		var appendedSelection = groupSelection.append("rect")
-		.attr("stroke", "red").attr("fill", "orange")
-		.attr("width", function (box) { return 200; })
-		.attr("height", function (box) { return 32; })
-		.attr("fill-opacity", 0.67)
-		.classed("box-title-background", true);
-	})
+	// // Append the title background.
+	// .call(function (groupSelection) {		
+	// 	var appendedSelection = groupSelection.append("rect")
+	// 	.attr("fill", "orange")
+	// 	.attr("width", 200)
+	// 	.attr("height", 32)
+	// 	// .attr("fill-opacity", 0.67)
+	// 	.attr("stroke", "#f77").attr("stroke-width", 2)		
+	// 	.attr("rx", 5)		
+	// 	.classed("box-title-background", true);
+	// })
 	// Append the title text.
 	.call(function (groupSelection) {		
 		var appendedSelection = groupSelection.append("text")
-		.attr("width", function (box) { return 184; })
-		.attr("height", function (box) { return 24; })
-		.attr("fill", function (box) { return "white"; })
+		.attr("width", 184)
+		.attr("height", 24)
 		.classed("box-title", true);
 	})
 	// Append the resize handle.
@@ -136,7 +139,7 @@ function updateBoxGroupSelection(boxGroupsSel, boxes) {
 	var titleTextsSelection = boxGroupsSel.selectAll("text.box-title");
 
 	setSelAttrsWithDataArray(titleTextsSelection, boxes, {
-		x: function (box) { return box.x + 8; },
+		x: function (box) { return box.x + 4; },
 		y: function (box) { return box.y + 20; }
 	});
 
