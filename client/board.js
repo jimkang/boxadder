@@ -345,15 +345,14 @@ var BoardZoomer = {
 /* Board populator */
 
 Template.board.rendered = function () {
-  var self = this;
-  self.node = self.find("svg#boardSVG");
+  var svgElement = this.find("svg#boardSVG");
 
 	function redrawBoxes() {
 		var boxesContext = new Meteor.deps.Context();
 		boxesContext.on_invalidate(redrawBoxes);
 		boxesContext.run(function() {
 			var boxes = Boxes.find().fetch();
-			matchElementsToBoxes(self.node, boxes);
+			matchElementsToBoxes(svgElement, boxes);
 		});
 	};
 
@@ -362,7 +361,7 @@ Template.board.rendered = function () {
 		itemsContext.on_invalidate(redrawItems);
 		itemsContext.run(function() {
 			var items = Items.find().fetch();
-			matchElementsToItems(self.node, items);
+			matchElementsToItems(svgElement, items);
 			
 			// This will get rid of the loading message.
 		  Session.set("loadingMessage", null);			
