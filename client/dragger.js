@@ -34,15 +34,17 @@ var BoardDragger = {
 	},
 
 	saveAndRecalcOnDragStop: function(d) {
+		
+		BoardZoomer.unlockZoom();
+		
 		// Do this work only if there was an actual change. A drag can end with 
 		// 0 movement in both dimensions.
 		if ((BoardDragger.currentDragChangeX === 0) && 
 			(BoardDragger.currentDragChangeY === 0)) {
 			return;
-		}		
+		}
+				
 		BoardDragger.resetDragChange();
-		
-		BoardZoomer.unlockZoom();
 		
 		// First, commit the changes to what was dragged.
 
