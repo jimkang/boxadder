@@ -20,6 +20,8 @@ var BoardDragger = {
 	groupDragMove: function(d) {
 		BoardDragger.updateDragChangeWithD3Event();
 		
+		BoardZoomer.lockZoom();
+		
 		d.x += d3.event.dx;
 		d.y += d3.event.dy;
 		// console.log(d.x + ", " + d.y);	
@@ -39,6 +41,8 @@ var BoardDragger = {
 			return;
 		}		
 		BoardDragger.resetDragChange();
+		
+		BoardZoomer.unlockZoom();
 		
 		// First, commit the changes to what was dragged.
 

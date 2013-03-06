@@ -329,6 +329,10 @@ var BoardZoomer = {
 		BoardZoomer.resetZoom();
 		BoardZoomer.locked = true;
 	},
+	lockZoom: function() {
+		console.log("locked!");
+		BoardZoomer.locked = true;
+	},
 	unlockZoom: function() {
 		console.log("unlocked!");
 		BoardZoomer.locked = false;
