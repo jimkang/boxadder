@@ -47,6 +47,13 @@ function matchElementsToBoxes(svgNode, boxes) {
 
 // Sets up a <g> hierarchy right after it is created.
 function initBoxGroupSelect(boxGroupSel) {
+	
+	function deleteBox(d, i) {
+		// Delete this box.
+		console.log("Delete!");
+		Boxes.remove(d._id);
+	}
+	
 	boxGroupSel.call(addGroupDragBehavior)
 	// Append the rect first so that it is the furthest back, z-order-wise.
 	.call(function (groupSelection) {
@@ -57,16 +64,6 @@ function initBoxGroupSelect(boxGroupSel) {
 		.attr("rx", 5)
 		.classed("bounds-background", true);
 	})
-	// Append the sum background.
-	// .call(function (groupSelection) {		
-	// 	var appendedSelection = groupSelection.append("rect")
-	// 	.attr("fill", "orange")
-	// 	.attr("width", 100)
-	// 	.attr("height", 44)
-	// 	.attr("stroke", "#f77").attr("stroke-width", 2)
-	// 	.attr("rx", 5)
-	// 	.classed("sum-background", true);
-	// })
 	// Append the sum text.
 	.call(function (groupSelection) {		
 		var appendedSelection = groupSelection.append("text")
@@ -75,17 +72,6 @@ function initBoxGroupSelect(boxGroupSel) {
 		// .attr("fill", "gray")
 		.classed("sum", true);
 	})
-	// // Append the title background.
-	// .call(function (groupSelection) {		
-	// 	var appendedSelection = groupSelection.append("rect")
-	// 	.attr("fill", "orange")
-	// 	.attr("width", 200)
-	// 	.attr("height", 32)
-	// 	// .attr("fill-opacity", 0.67)
-	// 	.attr("stroke", "#f77").attr("stroke-width", 2)		
-	// 	.attr("rx", 5)		
-	// 	.classed("box-title-background", true);
-	// })
 	// Append the title text.
 	.call(function (groupSelection) {		
 		var appendedSelection = groupSelection.append("text")
@@ -96,17 +82,26 @@ function initBoxGroupSelect(boxGroupSel) {
 	// Append the resize handle.
 	.call(function (groupSelection) {
 		appendResizeHandlesToGroups(groupSelection, 20);
-	})	
+	})
+	// Putting this rect behind the delete button and also binding it to touchend
+	// gives mobile users a bigger hitbox.
+	.append("rect")
+	.attr({ width: 44, height: 44, fill: "pink", 'fill-opacity': 0.0 })
+	.classed("deleteButtonContainer", true)
+	.on("touchend", deleteBox);
+	
 	// Append the delete button, which is defined in a <def> and instantiated
-	// with <use>.
-	.append("use")
+	// with <use>.	
+	boxGroupSel.append("use")
 		.attr("_id", function (box) { return box._id; })
 		.attr("xlink:href", "#deleteButtonPath")
-		.on("click", function (d, i) {
-			// Delete this box.
-			Boxes.remove(d._id);
-		})
-		.classed("deleteButton", true);	
+		.classed("deleteButton", true)
+		.on("click", deleteBox)
+		.on("touchend", deleteBox);
+		
+	// Need to use the touchend event in these cases because the click event will 
+	// trigger a handler on Mobile Safari if there's no zoom behavior attached, 
+	// but if there is, it will obscure it.
 }
 
 // Here, update the attributes that may change after an element is appended.
@@ -152,6 +147,11 @@ function updateBoxGroupSelection(boxGroupsSel, boxes) {
 		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
 
 	updateResizeHandlesInGroups(boxGroupsSel, 20, boxes);
+
+	setSelAttrsWithDataArray(boxGroupsSel.selectAll("rect.deleteButtonContainer"), boxes, {
+		x: function (box) { return box.x + box.width - 32; },
+		y: function (box) { return box.y - 12; }
+	});
 
 	setSelAttrsWithDataArray(boxGroupsSel.selectAll("use.deleteButton"), boxes, {
 		x: function (box) { return box.x + box.width - 16; },
@@ -347,6 +347,8 @@ var BoardZoomer = {
 Template.board.rendered = function () {
   var svgElement = this.find("svg#boardSVG");
 
+	BoardZoomer.setUpZoomOnBoard();	
+
 	function redrawBoxes() {
 		var boxesContext = new Meteor.deps.Context();
 		boxesContext.on_invalidate(redrawBoxes);
@@ -382,6 +384,5 @@ Template.board.rendered = function () {
     Meteor.subscribe('items', {boardId: Session.get("currentBoard")}, 
 			function() { redrawItems(); });
 	});
-	
-	BoardZoomer.setUpZoomOnBoard();	
+		
 };
