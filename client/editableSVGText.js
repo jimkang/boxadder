@@ -1,6 +1,6 @@
 // This is https://gist.github.com/GerHobbelt/2653660 with a few changes.
 
-// onSetFieldFunction shoul a data param.
+// onSetFieldFunction should be a data param.
 function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
 	doOnEditStart, doOnEditEnd)
 { 
