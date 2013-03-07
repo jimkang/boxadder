@@ -27,6 +27,47 @@ function updateResizeHandlesInGroups(groupsSelection, handleSideSize, dataArray)
 	});
 }
 
+// groupSel should be a selection of <g> elements bound to data that has an _id.
+function appendDeletionElementsToSelection(groupSel, deletionHandler) {
+	// Putting this rect behind the delete button and also binding it to touchend
+	// gives mobile users a bigger hitbox.
+	groupSel.append("rect")
+	.attr({ width: 44, height: 44, fill: "pink", 'fill-opacity': 0.0 })
+	.classed("deleteButtonContainer", true)
+	.on("touchend", deletionHandler);
+	
+	// Append the delete button, which is defined in a <def> and instantiated
+	// with <use>.	
+	groupSel.append("use")
+		.attr("_id", function (d) { return d._id; })
+		.attr("xlink:href", "#deleteButtonPath")
+		.classed("deleteButton", true)
+		.on("click", deletionHandler)
+		.on("touchend", deletionHandler);
+		
+	// Need to use the touchend event in these cases because the click event will 
+	// trigger a handler on Mobile Safari if there's no zoom behavior attached, 
+	// but if there is, it will obscure it.
+	
+	return groupSel;
+}
+
+
+// Updates the delete button-related elements under a selection of <g> elements.
+// dataArray should be an array of records that correspond to each <g>.
+function updateDeletionElementsInSelection(groupSel, dataArray) {
+	setSelAttrsWithDataArray(groupSel.selectAll("rect.deleteButtonContainer"), 
+	dataArray, {
+		x: function (d) { return d.x + d.width - 32; },
+		y: function (d) { return d.y - 12; }
+	});
+
+	setSelAttrsWithDataArray(groupSel.selectAll("use.deleteButton"), 
+	dataArray, {
+		x: function (d) { return d.x + d.width - 16; },
+		y: function (d) { return d.y + 4; }
+	});
+}
 
 // Creates/destroys <g> hierarchies to match the data, then inits and updates 
 // them.
@@ -47,13 +88,6 @@ function matchElementsToBoxes(svgNode, boxes) {
 
 // Sets up a <g> hierarchy right after it is created.
 function initBoxGroupSelect(boxGroupSel) {
-	
-	function deleteBox(d, i) {
-		// Delete this box.
-		console.log("Delete!");
-		Boxes.remove(d._id);
-	}
-	
 	boxGroupSel.call(addGroupDragBehavior)
 	// Append the rect first so that it is the furthest back, z-order-wise.
 	.call(function (groupSelection) {
@@ -82,26 +116,12 @@ function initBoxGroupSelect(boxGroupSel) {
 	// Append the resize handle.
 	.call(function (groupSelection) {
 		appendResizeHandlesToGroups(groupSelection, 20);
-	})
-	// Putting this rect behind the delete button and also binding it to touchend
-	// gives mobile users a bigger hitbox.
-	.append("rect")
-	.attr({ width: 44, height: 44, fill: "pink", 'fill-opacity': 0.0 })
-	.classed("deleteButtonContainer", true)
-	.on("touchend", deleteBox);
-	
-	// Append the delete button, which is defined in a <def> and instantiated
-	// with <use>.	
-	boxGroupSel.append("use")
-		.attr("_id", function (box) { return box._id; })
-		.attr("xlink:href", "#deleteButtonPath")
-		.classed("deleteButton", true)
-		.on("click", deleteBox)
-		.on("touchend", deleteBox);
-		
-	// Need to use the touchend event in these cases because the click event will 
-	// trigger a handler on Mobile Safari if there's no zoom behavior attached, 
-	// but if there is, it will obscure it.
+	});
+
+	appendDeletionElementsToSelection(boxGroupSel, function(d, i) {
+		// Delete this box.
+		Boxes.remove(d._id);
+	});
 }
 
 // Here, update the attributes that may change after an element is appended.
@@ -147,16 +167,7 @@ function updateBoxGroupSelection(boxGroupsSel, boxes) {
 		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
 
 	updateResizeHandlesInGroups(boxGroupsSel, 20, boxes);
-
-	setSelAttrsWithDataArray(boxGroupsSel.selectAll("rect.deleteButtonContainer"), boxes, {
-		x: function (box) { return box.x + box.width - 32; },
-		y: function (box) { return box.y - 12; }
-	});
-
-	setSelAttrsWithDataArray(boxGroupsSel.selectAll("use.deleteButton"), boxes, {
-		x: function (box) { return box.x + box.width - 16; },
-		y: function (box) { return box.y + 4; }
-	});
+	updateDeletionElementsInSelection(boxGroupsSel, boxes);
 }
 
 // Creates/destroys <g> hierarchies to match the data, then inits and updates 
@@ -195,14 +206,10 @@ function initItemGroupSelection(itemGroupSel) {
 	})
 	.call(function (groupSelection) {
 		appendResizeHandlesToGroups(groupSelection, 20);		
-	})
-	// Append the delete button, which is defined in a <def> and instantiated
-	// with <use>.
-	.call(function (groupSelection) { 
-		groupSelection.append("use").attr({
-			'xlink:href': "#deleteButtonPath", fill: 'white'
-		})
-		.classed("deleteButton", true);
+	});
+	
+	appendDeletionElementsToSelection(itemGroupSel, function(d, i) {
+		Items.remove(d._id);
 	});
 }
 
@@ -258,14 +265,7 @@ function updateItemGroupSelection(itemGroupSel, items) {
 	BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
 	
 	updateResizeHandlesInGroups(itemGroupSel, 20, items);
-	
-	// Set up the delete button.
-	// Set up the score field.
-	setSelAttrsWithDataArray(itemGroupSel.selectAll("use.deleteButton"), items, {
-		x: function (item) { return item.x + item.width - 16; },
-		y: function (item) { return item.y + 4; }
-	})
-	.on("click", function (d, i) { Items.remove(d._id); });
+	updateDeletionElementsInSelection(itemGroupSel, items);
 }
 
 function makeSureItemsAreInFrontOfBoxes(svgNode) {
