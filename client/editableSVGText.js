@@ -126,15 +126,23 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
 						this.focus();
 						
 						// Possibly because this is in a <foreignobject>, clicks outside 
-						// of 
-						var inputElement = this;						
-						$(document).on('click', function(e) {
-							var clickedElement = 
-								document.elementFromPoint(e.clientX, e.clientY);
-							if (clickedElement !== inputElement) {
-								exitEditing($(inputElement).data);
-							}
-						});
+						// of the input do not trigger the blur event. So, here's a 
+						// click handler that ends editing if there's a click that's not on 
+						// the input. However, if it is added without a delay it'll pick up 
+						// the initial click that triggered the creation of the form in the 
+						// first place and immediately exit editing. So: delay.
+						var inputElement = this;
+						setTimeout(function() { 
+							$(document).on('click', function(e) {
+								var clickedElement = 
+									document.elementFromPoint(e.clientX, e.clientY);
+								if (clickedElement !== inputElement) {
+									exitEditing($(inputElement).data);
+								}
+							});
+						},
+						0);
+						
 					});
     });
 }
