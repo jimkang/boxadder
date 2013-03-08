@@ -1,9 +1,8 @@
 // This is https://gist.github.com/GerHobbelt/2653660 with a few changes.
 
 // onSetFieldFunction should be a data param.
-function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
-	doOnEditStart, doOnEditEnd)
-{ 
+function makeEditable(d, field, inputSize, formXOffset, formYOffset, 
+	onSetFieldFunction, doOnEditStart, doOnEditEnd, inputClass) { 
   this
     .on("mouseover", function() {
       d3.select(this).style("fill", "red");
@@ -12,8 +11,6 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
       d3.select(this).style("fill", null);
     })
     .on("click", function(d) {
-      // console.log("editable", this);
-
       var p = this.parentNode;
  
       // Inject a HTML form to edit the content here.
@@ -71,7 +68,7 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
 				
       var inp = frm
       .attr("x", parseInt(el.attr('x')) + formXOffset)
-      .attr("y", parseInt(el.attr('y')) - parseInt((el.attr('height'))/2))
+      .attr("y", parseInt(el.attr('y')) + formYOffset)
       .attr("width", el.attr('width'))
       .attr("height", el.attr('height'))
       .append("xhtml:form")
@@ -143,6 +140,7 @@ function makeEditable(d, field, inputSize, formXOffset, onSetFieldFunction,
 						},
 						0);
 						
-					});
+					})
+					.classed(inputClass, true);
     });
 }

@@ -108,15 +108,22 @@ function initBoxGroupSelect(boxGroupSel) {
 	})
 	// Append the title text.
 	.call(function (groupSelection) {		
-		var appendedSelection = groupSelection.append("text")
-		.attr("width", 184)
-		.attr("height", 24)
+		var appendedSel= groupSelection.append("text")
+		.attr("width", 200)
+		.attr("height", 48)
 		.classed("box-title", true);
+		
+		appendedSel.call(makeEditable, "title", 20, 0, -18,
+			function (box) {
+				// When the field is set, update the collection containing the data.
+				syncDatumToCollection(box, ['title'], Boxes, identityPassthrough);
+			},
+			BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom, "titleInput");		
 	})
 	// Append the resize handle.
 	.call(function (groupSelection) {
 		appendResizeHandlesToGroups(groupSelection, 20);
-	});
+	});	
 
 	appendDeletionElementsToSelection(boxGroupSel, function(d, i) {
 		// Delete this box.
@@ -158,13 +165,7 @@ function updateBoxGroupSelection(boxGroupsSel, boxes) {
 		y: function (box) { return box.y + 20; }
 	});
 
-	titleTextsSelection.text(function (box) { return box.title; })
-	.call(makeEditable, "title", 20, 0, 
-		function (box) {
-			// When the field is set, update the collection containing the data.
-			syncDatumToCollection(box, ['title'], Boxes, identityPassthrough);
-		},
-		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
+	titleTextsSelection.text(function (box) { return box.title; });
 
 	updateResizeHandlesInGroups(boxGroupsSel, 20, boxes);
 	updateDeletionElementsInSelection(boxGroupsSel, boxes);
@@ -198,11 +199,24 @@ function initItemGroupSelection(itemGroupSel) {
 	})
 	// Append the title.
 	.call(function (groupSelection) { 
-		groupSelection.append("text").classed("itemtitle", true); 
+		groupSelection.append("text").classed("itemtitle", true)
+		.call(makeEditable, "title", 20, -4, -25, 
+			function (d) {
+				// When the field is set, update the collection containing the data.
+				syncDatumToCollection(d, ['title'], Items, identityPassthrough);
+			},
+			BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom, "titleInput"
+		); 
 	})
 	// Append the score label.
 	.call(function (groupSelection) { 
-		groupSelection.append("text").classed("score", true); 
+		groupSelection.append("text").classed("score", true)
+		.call(makeEditable, "score", 4, -18, -22, function (d) {
+			// When the field is set, update the collection containing the data.
+			syncDatumToCollection(d, ['score'], Items, 
+				function(val) { return parseInt(val); });
+		},
+		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom, "scoreInput");		
 	})
 	.call(function (groupSelection) {
 		appendResizeHandlesToGroups(groupSelection, 20);		
@@ -239,14 +253,7 @@ function updateItemGroupSelection(itemGroupSel, items) {
 		height: function (item) { return item.height; },
 		fill: function(item) { return 'white'; }
 	})
-	.text(function (d) { return d.title; })
-	.call(makeEditable, "title", 20, 0, 
-		function (d) {
-			// When the field is set, update the collection containing the data.
-			syncDatumToCollection(d, ['title'], Items, identityPassthrough);
-		},
-		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom
-	);
+	.text(function (d) { return d.title; });
 	
 	// Set up the score field.
 	setSelAttrsWithDataArray(itemGroupSel.selectAll("text.score"), items, {
@@ -256,13 +263,7 @@ function updateItemGroupSelection(itemGroupSel, items) {
 		height: function (item) { return item.height - 4; },
 		fill: function(item) { return 'white'; }
 	})
-	.text(function (d) { return d.score; })
-	.call(makeEditable, "score", 4, -18, function (d) {
-		// When the field is set, update the collection containing the data.
-		syncDatumToCollection(d, ['score'], Items, 
-			function(val) { return parseInt(val); });
-	},
-	BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom);
+	.text(function (d) { return d.score; });
 	
 	updateResizeHandlesInGroups(itemGroupSel, 20, items);
 	updateDeletionElementsInSelection(itemGroupSel, items);
