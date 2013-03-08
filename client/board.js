@@ -118,7 +118,8 @@ function initBoxGroupSelect(boxGroupSel) {
 				// When the field is set, update the collection containing the data.
 				syncDatumToCollection(box, ['title'], Boxes, identityPassthrough);
 			},
-			BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom, "titleInput");		
+			BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, BoardZoomer.unlockZoom, 
+			"titleInput");		
 	})
 	// Append the resize handle.
 	.call(function (groupSelection) {
@@ -205,7 +206,8 @@ function initItemGroupSelection(itemGroupSel) {
 				// When the field is set, update the collection containing the data.
 				syncDatumToCollection(d, ['title'], Items, identityPassthrough);
 			},
-			BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom, "titleInput"
+			BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, BoardZoomer.unlockZoom, 
+			"titleInput"
 		); 
 	})
 	// Append the score label.
@@ -216,7 +218,8 @@ function initItemGroupSelection(itemGroupSel) {
 			syncDatumToCollection(d, ['score'], Items, 
 				function(val) { return parseInt(val); });
 		},
-		BoardZoomer.lockZoomToDefault, BoardZoomer.unlockZoom, "scoreInput");		
+		BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, BoardZoomer.unlockZoom, 
+		"scoreInput");		
 	})
 	.call(function (groupSelection) {
 		appendResizeHandlesToGroups(groupSelection, 20);		
@@ -340,6 +343,19 @@ var BoardZoomer = {
 	unlockZoom: function() {
 		console.log("unlocked!");
 		BoardZoomer.locked = false;
+	},
+	lockZoomToDefaultCenterPanAtDataCoords: function(d) {
+		var boxZoneSel = $('.boxZone');
+		var boardSel = $('#boardSVG');
+		var boardWidth = parseInt(boardSel.attr('width'));
+		var boardHeight = parseInt(boardSel.attr('height'));
+		var newTransformString = 'translate(' + 
+			(-d.x + boardWidth/2) + ', ' + (-d.y + boardHeight/2) + 
+			') scale(1)';		
+		// console.log("Setting transform to: ", newTransformString);
+		boxZoneSel.attr('transform', newTransformString);
+		d3.event.scale = 1.0;
+		BoardZoomer.locked = true;
 	}
 }
 

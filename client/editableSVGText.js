@@ -48,7 +48,7 @@ function makeEditable(d, field, inputSize, formXOffset, formYOffset,
         e.preventDefault();
 			}
 			
-			function exitEditing(d) {
+			function exitEditing(d) {				
         var txt = inp.node().value;
 				if (editCancelled) {
 					// Reset this flag.
@@ -115,9 +115,9 @@ function makeEditable(d, field, inputSize, formXOffset, formYOffset,
 						}
 					})
 					.attr("size", inputSize)
-					.each(function() { 
+					.each(function(d, i) { 
 						// The text field draws weirdly if we're zoomed in.
-						doOnEditStart();
+						doOnEditStart(d);
 						// It's important to call focus *after* the value is set. This way,
 						// the value text gets highlighted.
 						this.focus();
@@ -129,12 +129,13 @@ function makeEditable(d, field, inputSize, formXOffset, formYOffset,
 						// the initial click that triggered the creation of the form in the 
 						// first place and immediately exit editing. So: delay.
 						var inputElement = this;
+						
 						setTimeout(function() { 
 							$(document).on('click', function(e) {
 								var clickedElement = 
 									document.elementFromPoint(e.clientX, e.clientY);
 								if (clickedElement !== inputElement) {
-									exitEditing($(inputElement).data);
+									exitEditing(d);
 								}
 							});
 						},
