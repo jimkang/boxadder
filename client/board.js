@@ -7,14 +7,12 @@ function syncCommonRectAttrsToDataArray(selection, dataArray) {
 
 function appendResizeHandlesToGroups(groupsSelection, handleSideSize) {
 	var appendedSelection = groupsSelection.append("use")
+	.attr("id", "resizeGrip")
 	.attr("xlink:href", "#resizeGrip")
 	.attr("fill", "gray")
 	.attr("width", handleSideSize)
 	.attr("height", handleSideSize)
 	.classed("resize-handle", true);
-		
-	// Append custom drag behavior for resizing its parent box.
-	appendedSelection.call(addResizeHandleDragBehavior);
 }
 
 function updateResizeHandlesInGroups(groupsSelection, handleSideSize, dataArray) {
@@ -123,8 +121,8 @@ function initBoxGroupSelect(boxGroupSel) {
 	})
 	// Append the resize handle.
 	.call(function (groupSelection) {
-		appendResizeHandlesToGroups(groupSelection, 20);
-	});	
+		appendResizeHandlesToGroups(groupSelection, 44);
+	});
 
 	appendDeletionElementsToSelection(boxGroupSel, function(d, i) {
 		// Delete this box.
@@ -222,7 +220,7 @@ function initItemGroupSelection(itemGroupSel) {
 		"scoreInput");		
 	})
 	.call(function (groupSelection) {
-		appendResizeHandlesToGroups(groupSelection, 20);		
+		appendResizeHandlesToGroups(groupSelection, 44);		
 	});
 	
 	appendDeletionElementsToSelection(itemGroupSel, function(d, i) {
