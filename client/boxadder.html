@@ -27,7 +27,7 @@
 
 <template name="board">
   <div class="board">
-      <svg width="768" height="1024" id="boardSVG">
+      <svg width="768" height="768" id="boardSVG">
 			  <defs>
 				  <path id="deleteButtonPath" d="M 0 0 L 13 13 M 13 0 L 0 13"
 					fill="none" stroke="#282828" stroke-width="7" stroke-opacity="0.5" 
@@ -67,8 +67,13 @@
 		
 		<span>
 			<button type="button" class="addNewBox">Add Box</button>
-		</span>
+		</span>		
 	{{/if}}
+	
+	<span>
+		<button type="button" class="zoomToFit">Zoom to Fit</button>
+	</span>
+	
 	<span {{#if currentBoardIsSet}}class="rightJustified"{{/if}}>
 		<a href="mailto:jimkang@ghostcrabworkshop.com?subject=Boxadder" target="_blank">
 			<button type="button" class="questionsButton">Questions/Comments</button>

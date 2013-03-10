@@ -76,7 +76,17 @@ Template.boardControlBar.events({
 		// TODO: Wrap to next row at some point.
 		Session.set("nextBoxX", nextBoxX + 64);
 		Session.set("nextBoxY", nextBoxY + 64);
-  }	
+  },
+  'click .zoomToFit': function (event, template) {
+		var rects = [];
+		
+		var items = Items.find().fetch();
+		var boxes = Boxes.find().fetch();
+		if (items) { rects = rects.concat(items); }
+		if (boxes) { rects = rects.concat(boxes); }
+		
+		BoardZoomer.zoomToFitAllRects(rects);
+	}
 });	
 
 Template.boardControlBar.boardIsWritable = function() {
