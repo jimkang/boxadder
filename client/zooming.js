@@ -138,7 +138,12 @@ var BoardZoomer = {
 		var newTranslateX = -enclosingBounds.left * newScale;
 		var newTranslateY = -enclosingBounds.top * newScale;
 		// console.log("new translate:", newTranslateX, newTranslateY);
-		
+		BoardZoomer.tweenToNewZoom(newScale, [newTranslateX, newTranslateY]);
+	},
+	
+	// newTranslate should be a two-element array corresponding to x and y in 
+	// the translation.
+	tweenToNewZoom: function(newScale, newTranslate) {
 		var oldTransform = BoardZoomer.boxZoneSelection.attr("transform");
 			
 	  d3.transition().duration(750).tween("zoom", function() {
@@ -160,7 +165,7 @@ var BoardZoomer = {
 			console.log("oldScale, newScale, oldTranslate", oldScale, newScale, oldTranslate);
      	var interpolateScale = d3.interpolate(oldScale, newScale);
 			interpolateTranslation = 
-				d3.interpolate(oldTranslate, [newTranslateX, newTranslateY]);
+				d3.interpolate(oldTranslate, newTranslate);
 			
 	    return function(t) {
 		 		// This updates the behavior's scale so that the next time a zoom
@@ -180,6 +185,6 @@ var BoardZoomer = {
 					"translate(" + currentTranslate[0] + ", " + currentTranslate[1] + ")" + 
 					" scale(" + currentScale + ")");				 
      	};
-	 	});
+	 	});		
 	}
 }
