@@ -3,6 +3,7 @@ var BoardZoomer = {
 	locked: false,
 	boxZoneSelection: null,	
 	zoomBehavior: null,
+	parsedPreLockTransform: null,
 	
 	setUpZoomOnBoard: function() {		
 		// Make x and y scaling functions that just returns whatever is passed into 
@@ -19,7 +20,7 @@ var BoardZoomer = {
 			
 		BoardZoomer.zoomBehavior = 
 		d3.behavior.zoom().x(x).y(y).scaleExtent([0.0625, 4])
-			.on("zoom", BoardZoomer.zoom);
+			.on("zoom", BoardZoomer.syncZoomEventToTransform);
 	
 		// When zoom and pan gestures happen inside of #boardSVG, have it call the 
 		// zoom function to make changes.
@@ -32,9 +33,9 @@ var BoardZoomer = {
 	// The behavior is connected to the <svg> rather than the <g> because then
 	// dragging-to-pan doesn't work otherwise. Maybe something cannot be 
 	// transformed while it is receiving drag events?
-	zoom: function() {
+	syncZoomEventToTransform: function() {
 		if (!BoardZoomer.locked) {
-			BoardZoomer.boxZoneSelection.attr("transform", 
+			BoardZoomer.boxZoneSelection.attr('transform', 
 				"translate(" + d3.event.translate + ")" + 
 				" scale(" + d3.event.scale + ")");
 		}
@@ -45,23 +46,21 @@ var BoardZoomer = {
 		}
 	},
 	lockZoomToDefault: function() {
-		console.log("locked to default!");
+		// console.log("locked to default!");
 		BoardZoomer.resetZoom();
 		BoardZoomer.locked = true;
 	},
 	lockZoom: function() {
-		console.log("locked!");
+		// console.log("locked!");
 		BoardZoomer.locked = true;
 	},
-	preLockZoomTransformString: null,
 	unlockZoom: function() {
-		console.log("unlocked!");
 		BoardZoomer.locked = false;
-		// If preLockZoomTransformString is set, restore the zoom transform to that.
-		if (BoardZoomer.preLockZoomTransformString) {
-			BoardZoomer.boxZoneSelection.attr('transform', 
-				BoardZoomer.preLockZoomTransformString);
-			BoardZoomer.preLockZoomTransformString = null;
+		// If parsedPreLockTransform is set, restore the zoom transform to that.
+		if (BoardZoomer.parsedPreLockTransform) {
+			BoardZoomer.tweenToNewZoom(BoardZoomer.parsedPreLockTransform.scale, 
+				BoardZoomer.parsedPreLockTransform.translate, 300);
+			BoardZoomer.parsedPreLockTransform = null;
 		}
 	},
 	lockZoomToDefaultCenterPanAtDataCoords: function(d) {
@@ -71,15 +70,13 @@ var BoardZoomer = {
 		var boardHeight = parseInt(boardSel.attr('height'));
 		
 		// unlockZoom will restore the zoom transform to this.
-		BoardZoomer.preLockZoomTransformString = 
-			BoardZoomer.boxZoneSelection.attr('transform');
+		BoardZoomer.parsedPreLockTransform = 
+			BoardZoomer.parseScaleAndTranslateFromTransformString(
+				BoardZoomer.boxZoneSelection.attr('transform'));
 		
-		var newTransformString = 'translate(' + 
-			(-d.x + boardWidth/2) + ', ' + (-d.y + boardHeight/2) + 
-			') scale(1)';		
-		// console.log("Setting transform to: ", newTransformString);
-		boxZoneSel.attr('transform', newTransformString);
-		d3.event.scale = 1.0;
+		BoardZoomer.tweenToNewZoom(1, 
+			[(-d.x + boardWidth/2), (-d.y + boardHeight/2)], 300);
+		
 		BoardZoomer.lockZoom();
 	},
 	// A rect is an object that has x, y, width, and height members.
@@ -90,8 +87,6 @@ var BoardZoomer = {
 			return;
 		}
 
-		console.log(rectArray);
-		
 		var enclosingBounds = _.reduce(rectArray, function(memo, rect) {
 			if (rect.x < memo.left) {
 				memo.left = rect.x;
@@ -138,34 +133,26 @@ var BoardZoomer = {
 		var newTranslateX = -enclosingBounds.left * newScale;
 		var newTranslateY = -enclosingBounds.top * newScale;
 		// console.log("new translate:", newTranslateX, newTranslateY);
-		BoardZoomer.tweenToNewZoom(newScale, [newTranslateX, newTranslateY]);
+		BoardZoomer.tweenToNewZoom(newScale, [newTranslateX, newTranslateY], 500);
 	},
 	
 	// newTranslate should be a two-element array corresponding to x and y in 
 	// the translation.
-	tweenToNewZoom: function(newScale, newTranslate) {
-		var oldTransform = BoardZoomer.boxZoneSelection.attr("transform");
+	tweenToNewZoom: function(newScale, newTranslate, time) {
+		var oldTransform = BoardZoomer.boxZoneSelection.attr('transform');
 			
-	  d3.transition().duration(750).tween("zoom", function() {
+	  d3.transition().duration(time).tween("zoom", function() {
 			var oldScale = 1.0;
 			var oldTranslate = [0, 0];
 			if (oldTransform) {
-				// Transform string will be in the form of "translate(0, 0) scale(1)".
-				var scalePiece = oldTransform.split('scale(')[1];
-				oldScale = parseInt(scalePiece.substr(0, scalePiece.length - 1));
-				
-				var oldTranslateFragments = oldTransform.split(') ')[0].split(',');
-				// Chop out "translate(".
-				oldTranslate[0] = parseInt(oldTranslateFragments[0].substr(10));
-				oldTranslate[1] = parseInt(oldTranslateFragments[1]);
-				if (!oldTranslate[1]) {
-					console.log("Got NaN out of", oldTranslateFragments);
-				}
+				var parsed = 
+					BoardZoomer.parseScaleAndTranslateFromTransformString(oldTransform);
+				oldScale = parsed.scale;
+				oldTranslate = parsed.translate;
 			}
-			console.log("oldScale, newScale, oldTranslate", oldScale, newScale, oldTranslate);
+			// console.log("oldScale, newScale, oldTranslate", oldScale, newScale, oldTranslate);
      	var interpolateScale = d3.interpolate(oldScale, newScale);
-			interpolateTranslation = 
-				d3.interpolate(oldTranslate, newTranslate);
+			interpolateTranslation = d3.interpolate(oldTranslate, newTranslate);
 			
 	    return function(t) {
 		 		// This updates the behavior's scale so that the next time a zoom
@@ -181,10 +168,33 @@ var BoardZoomer = {
 
 				// This sets the transform on the root <g> and changes the zoom and
 				// panning.
-				BoardZoomer.boxZoneSelection.attr("transform", 
+				BoardZoomer.boxZoneSelection.attr('transform', 
 					"translate(" + currentTranslate[0] + ", " + currentTranslate[1] + ")" + 
 					" scale(" + currentScale + ")");				 
      	};
 	 	});		
+	},
+
+	// Returns dict in the form 
+	// { scale: int, translate: [translateX, translateY] }
+	parseScaleAndTranslateFromTransformString: function(transformString) {
+		var parsed = { scale: 1.0, translate: [0, 0] };
+
+		if (transformString && (transformString.length > 0)) {		
+			// Transform string will be in the form of "translate(0, 0) scale(1)".
+			var scalePiece = transformString.split('scale(')[1];
+			parsed.scale = parseFloat(scalePiece.substr(0, scalePiece.length - 1));
+						
+			var translateFragments = transformString.split(') ')[0].split(',');
+			parsed.translate = [
+				// Chop out "translate(".
+				parseFloat(translateFragments[0].substr(10)),
+				parseFloat(translateFragments[1])
+			];
+			if (!parsed.translate[1]) {
+				console.log("Got NaN out of", translateFragments);
+			}
+		}
+		return parsed;
 	}
 }
