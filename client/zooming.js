@@ -135,8 +135,6 @@ var BoardZoomer = {
 			newScale = newScaleY;
 		}
 		
-		// The translate is applied after the scale is applied, so we need to apply
-		// the scaling ourselves.
 		var newTranslateX = -enclosingBounds.left * newScale;
 		var newTranslateY = -enclosingBounds.top * newScale;
 		// console.log("new translate:", newTranslateX, newTranslateY);
@@ -167,7 +165,9 @@ var BoardZoomer = {
 	    return function(t) {
 		 		// This updates the behavior's scale so that the next time a zoom
 				// happens, it starts from here instead of jumping back to what it
-				// thought it was last time.
+				// thought it was last time.				
+				// The translate is applied after the scale is applied, so we need to
+				// apply the scaling to the behavior ourselves.				
 				var currentScale = interpolateScale(t);
 		 		BoardZoomer.zoomBehavior.scale(currentScale);
 		 		// Same with the translate.
