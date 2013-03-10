@@ -254,6 +254,19 @@ Template.deleteBoard.events({
   }
 });
 
+Template.board.widthAndHeightAttrs = function() {
+	var width = 768;
+	if (window.innerWidth < 480) {
+		width = 240;
+	}
+	else if (window.innerWidth < 1024) {
+		width = 640;
+	}
+	var height = width;
+
+	return 'width=' + width + ' height=' + height + '';
+}
+
 /* Template utils */
 
 function triggerErrorAlert(error, duration) {
