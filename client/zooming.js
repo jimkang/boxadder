@@ -140,17 +140,46 @@ var BoardZoomer = {
 		var newTranslateX = -enclosingBounds.left * newScale;
 		var newTranslateY = -enclosingBounds.top * newScale;
 		// console.log("new translate:", newTranslateX, newTranslateY);
-	
-		// This sets the transform on the root <g> and changes the zoom and panning.
-		BoardZoomer.boxZoneSelection.attr("transform", 
-			"translate(" + newTranslateX + ", " + newTranslateY + ")" + 
-			" scale(" + newScale + ")");
+		
+		var oldTransform = BoardZoomer.boxZoneSelection.attr("transform");
 			
-		// This updates the behavior's scale so that the next time a zoom happens, 
-		// it starts from here instead of jumping back to what it thought it was 
-		// last time.
-		BoardZoomer.zoomBehavior.scale(newScale);
-		// Same with the translate.
-		BoardZoomer.zoomBehavior.translate([newTranslateX, newTranslateY]);
+	  d3.transition().duration(750).tween("zoom", function() {
+			var oldScale = 1.0;
+			var oldTranslate = [0, 0];
+			if (oldTransform) {
+				// Transform string will be in the form of "translate(0, 0) scale(1)".
+				var scalePiece = oldTransform.split('scale(')[1];
+				oldScale = parseInt(scalePiece.substr(0, scalePiece.length - 1));
+				
+				var oldTranslateFragments = oldTransform.split(') ')[0].split(',');
+				// Chop out "translate(".
+				oldTranslate[0] = parseInt(oldTranslateFragments[0].substr(10));
+				oldTranslate[1] = parseInt(oldTranslateFragments[1]);
+				if (!oldTranslate[1]) {
+					console.log("Got NaN out of", oldTranslateFragments);
+				}
+			}
+			console.log("oldScale, newScale, oldTranslate", oldScale, newScale, oldTranslate);
+     	var interpolateScale = d3.interpolate(oldScale, newScale);
+			interpolateTranslation = 
+				d3.interpolate(oldTranslate, [newTranslateX, newTranslateY]);
+			
+	    return function(t) {
+		 		// This updates the behavior's scale so that the next time a zoom
+				// happens, it starts from here instead of jumping back to what it
+				// thought it was last time.
+				var currentScale = interpolateScale(t);
+		 		BoardZoomer.zoomBehavior.scale(currentScale);
+		 		// Same with the translate.
+				var currentTranslate = interpolateTranslation(t);
+		 		BoardZoomer.zoomBehavior.translate(currentTranslate);
+
+				// This sets the transform on the root <g> and changes the zoom and
+				// panning.
+				BoardZoomer.boxZoneSelection.attr("transform", 
+					"translate(" + currentTranslate[0] + ", " + currentTranslate[1] + ")" + 
+					" scale(" + currentScale + ")");				 
+     	};
+	 	});
 	}
 }
