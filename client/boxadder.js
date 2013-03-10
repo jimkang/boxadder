@@ -86,6 +86,12 @@ Template.boardControlBar.events({
 		if (boxes) { rects = rects.concat(boxes); }
 		
 		BoardZoomer.zoomToFitAllRects(rects);
+	},
+	'click #expandExplanation': function(event, template) {
+		Session.set('showExplanation', true);
+	},
+	'click #closeExplanation': function(event, template) {
+		Session.set('showExplanation', false);
 	}
 });	
 
@@ -100,6 +106,10 @@ Template.boardControlBar.currentBoardNotSet = function() {
 Template.boardControlBar.currentBoardIsSet = function() {
 	return Session.get('currentBoard');
 };
+
+Template.boardControlBar.showExplanation = function() {
+	return Session.get('showExplanation');
+}
 
 // TODO: Find how to share a helper among the templates.
 

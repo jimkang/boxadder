@@ -87,7 +87,12 @@
 	</span></p>
 	
 	{{#if boardIsWritable}}
-		<p><span class="explanation">Add items and boxes with the buttons, then move them around and edit their values. Use the mouse wheel or pinch gestures to zoom in and out and click and drag on empty spaces to pan around.</span></p>
+		<a href="#" id="expandExplanation">What do I do?</a>
+	  {{#if showExplanation}}
+    	<button type="button" id="closeExplanation">&times;</button>
+		
+			<p><span class="explanation">Add items and boxes with the buttons, then move them around and edit their values. Use the mouse wheel or pinch gestures to zoom in and out and click and drag on empty spaces to pan around.</span></p>
+	  {{/if}}		
 	{{/if}}
 	
 </template>
