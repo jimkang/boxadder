@@ -145,9 +145,9 @@ Template.boardAdminSection.events({
 		    usersThatCanRead: [ Meteor.userId() ],
 		    usersThatCanWrite: [ Meteor.userId() ]
 		  }, 
-			function (error, board) {
+			function (error, boardId) {
 		    if (!error) {
-		      Session.set("currentBoard", board._id);
+		      Session.set("currentBoard", boardId);
 					// Should cause a reload of the board.
 		    }
 		  });
