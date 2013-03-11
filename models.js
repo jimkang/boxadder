@@ -181,7 +181,7 @@ function sumForBox(box) {
 		// We are looking just for intersection, not containment.
 		if ((itemRight >= boxLeft) && (item.x <= boxRight) &&
 			(itemBottom >= boxTop) && (item.y <= boxBottom)) {
-			return true;				
+			return true;
 		}
 		else {
 			// console.log("Not in box: " + item);
@@ -200,7 +200,7 @@ function sumForBox(box) {
 }
 
 function boardURLId(boardName) {
-	boardName = encodeURIComponent(boardName.replace(' ', '-'));
+	boardName = encodeURIComponent(boardName.replace(/ /g, '-'));
 	var urlId = boardName;
 	var appendedNumber = 1;
 	while (Boards.find({boardURLId: urlId}).count() > 0) {
