@@ -147,8 +147,7 @@ Template.boardAdminSection.events({
 		  }, 
 			function (error, boardId) {
 		    if (!error) {
-		      Session.set("currentBoard", boardId);
-					// Should cause a reload of the board.
+					updateBoard(boardId);
 		    }
 		  });
 		  Session.set("showNewBoardDialog", false);
@@ -176,8 +175,7 @@ Template.boardAdminSection.events({
 				triggerErrorAlert(error, 2000);
 			}
 			else {
-				// console.log("Setting currentBoard to:", newBoardId);
-				Session.set("currentBoard", newBoardId);
+				updateBoard(newBoardId);
 			}
     });
 	}	
@@ -249,14 +247,7 @@ Template.boardList.selectedClass = function() {
 
 Template.boardList.events({
 	'click .boardListItem': function(evt) {
-		var oldBoardId = Session.get("currentBoard");
-		// Set the current board.
-		Session.set("currentBoard", this._id);
-		// Make the URL match.
-		var newBoard = getCurrentBoard();
-		if (newBoard.urlId) {
-			history.pushState(oldBoardId, "Boxadder", newBoard.urlId);			
-		}
+		updateBoard(this._id);
 	}
 });
 
@@ -368,4 +359,21 @@ function getCurrentBoard() {
 		 board = Boards.findOne(boardId);
 	}
 	return board;
+}
+
+// previousBoardId can be null if there is none.
+function syncURLToCurrentBoard(previousBoardId) {
+	var newBoard = getCurrentBoard();
+	// location.pathname starts with a /, so drop that before comparing.
+	if (newBoard.urlId && newBoard.urlId != location.pathname.substr(1)) {
+		history.pushState(previousBoardId, "Boxadder", newBoard.urlId);			
+	}	
+}
+
+// Updates the currentBoard session member while updating the URL.
+function updateBoard(newBoardId) {
+	var oldBoardId = Session.get("currentBoard");
+	// Set the current board. Should cause a reload of the board.
+	Session.set("currentBoard", newBoardId);
+	syncURLToCurrentBoard(oldBoardId);	
 }
