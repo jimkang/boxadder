@@ -137,6 +137,11 @@ body {
 	background-color: #fc8;
 }
 
+.instruction {
+	font-size: 0.95em;
+	background-color: #ff6;
+}
+
 .loading {
 	font-weight: bold;
 	font-style: italic;
