@@ -75,7 +75,8 @@ var BoardZoomer = {
 				BoardZoomer.boxZoneSelection.attr('transform'));
 		
 		BoardZoomer.tweenToNewZoom(1, 
-			[(-d.x + boardWidth/2), (-d.y + boardHeight/2)], 300);
+			[(-d.x - d.width/2 + boardWidth/2), 
+			(-d.y - d.height/2 + boardHeight/2)], 300);
 		
 		BoardZoomer.lockZoom();
 	},
