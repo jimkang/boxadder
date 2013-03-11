@@ -28,9 +28,10 @@ function makeEditable(d, field, inputSize, formXOffset, formYOffset,
 		}
  
 	 	var onSetFieldFunctionCalled = false;
-		function callOnSetFieldFunction(d) {
+		function callOnSetFieldFunction(d, fieldText) {
 			if (!onSetFieldFunctionCalled && options.onSetField) {
-				options.onSetField(d);
+				// onSetField will handle updating d, if it wants to.
+				options.onSetField(d, fieldText);
 				onSetFieldFunctionCalled = true;
 			}					
 		}
@@ -50,8 +51,7 @@ function makeEditable(d, field, inputSize, formXOffset, formYOffset,
 				editCancelled = false;
 			}
 			else {
-        d[field] = txt;
-				callOnSetFieldFunction(d);
+				callOnSetFieldFunction(d, txt);
         el.text(function(d) { return d[field]; });
 			}
 			removeForm();
@@ -90,8 +90,7 @@ function makeEditable(d, field, inputSize, formXOffset, formYOffset,
  
             var txt = inp.node().value;
  
-            d[field] = txt;
-						callOnSetFieldFunction(d);
+						callOnSetFieldFunction(d, txt);
             el.text(function(d) { return d[field]; });
 						// I don't know what I changed to make this select() unable 
 						// to catch anything...

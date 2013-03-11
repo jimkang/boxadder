@@ -112,8 +112,10 @@ function initBoxGroupSelect(boxGroupSel) {
 		.classed("box-title", true);
 		
 		appendedSel.call(makeEditable, "title", 20, 0, -18, "titleInput", {
-			onSetField: function (box) {
-				// When the field is set, update the collection containing the data.
+			onSetField: function (box, fieldText) {
+				// When the field is set, update the datum and the collection
+				// containing the data.
+				box.title = fieldText;
 				syncDatumToCollection(box, ['title'], Boxes, identityPassthrough);
 			},
 			onEditStart: BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, 
@@ -201,9 +203,11 @@ function initItemGroupSelection(itemGroupSel) {
 	.call(function (groupSelection) { 
 		groupSelection.append("text").classed("itemtitle", true)
 		.call(makeEditable, "title", 20, -4, -25, "titleInput", {
-			onSetField: function (d) {
-				// When the field is set, update the collection containing the data.
-				syncDatumToCollection(d, ['title'], Items, identityPassthrough);
+			onSetField: function (item, fieldText) {
+				// When the field is set, update the datum and the collection
+				// containing the data.
+				item.title = fieldText;
+				syncDatumToCollection(item, ['title'], Items, identityPassthrough);
 			},
 			onEditStart: BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, 
 			onEditEnd: BoardZoomer.unlockZoom
@@ -213,10 +217,15 @@ function initItemGroupSelection(itemGroupSel) {
 	.call(function (groupSelection) { 
 		groupSelection.append("text").classed("score", true)
 		.call(makeEditable, "score", 4, -18, -22, "scoreInput", {
-			onSetField: function (d) {
-				// When the field is set, update the collection containing the data.
-				syncDatumToCollection(d, ['score'], Items, 
-					function(val) { return parseInt(val); });
+			onSetField: function (item, fieldText) {
+				// When the field is set, update the datum and the collection
+				// containing the data.
+				var parsed = parseInt(fieldText);
+				if (parsed) {
+					item.score = parsed;
+					syncDatumToCollection(item, ['score'], Items, 
+						function(val) { return val; });					
+				}
 			},
 			onEditStart: BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, 
 			onEditEnd: BoardZoomer.unlockZoom		
