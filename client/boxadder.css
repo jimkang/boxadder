@@ -9,6 +9,7 @@ body {
     -o-user-select: none;
     user-select: none;
 		color: #332;
+		background-color: rgb(245, 245, 245);
 }
 
 #outer {
@@ -18,7 +19,7 @@ body {
 
 .board svg {
 	border: 1px dashed #444;
-	background-color: rgb(245, 245, 245);
+	background-color: rgb(240, 240, 240);
 }
 
 .nonboard {
