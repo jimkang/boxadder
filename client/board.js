@@ -327,12 +327,35 @@ Template.board.rendered = function () {
 		  Session.set("loadingMessage", null);			
 		});
 	};
+	
+	function loadQueuedBoard() {
+		var boardContext = new Meteor.deps.Context();
+		boardContext.on_invalidate(loadQueuedBoard);
+		boardContext.run(function() {
+			var urlIdToLoad = Session.get("urlIdToLoadOnRender");
+			if (urlIdToLoad) {
+				var board = Boards.findOne({urlId: urlIdToLoad});
+				if (board) {
+					Session.set("currentBoard", board._id);
+				}
+				else {
+					console.log("Board not found!", board);
+				}
+				Session.set("urlIdToLoadOnRender", null);
+			}
+		});
+	}
 
 	Meteor.autorun(function() {
 		// This subscription keeps the board list, which also uses the boards
 		// collection, updated reactively.
-	  Meteor.subscribe('boards', {boardId: Session.get("currentBoard")}, 
-			function() { Session.set("loadingMessage", "Loading board..."); });
+	  Meteor.subscribe('boards', 
+			function() { Session.set("loadingMessage", "Loading board..."); ; });
+
+	  Meteor.subscribe('boards', function() { 
+				Session.set("loadingMessage", "Loading board..."); 
+				loadQueuedBoard();
+			});
 		
 	  Meteor.subscribe('boxes', {boardId: Session.get("currentBoard")}, 
 			function() { redrawBoxes(); });	
@@ -342,5 +365,5 @@ Template.board.rendered = function () {
     Meteor.subscribe('items', {boardId: Session.get("currentBoard")}, 
 			function() { redrawItems(); });
 	});
-		
+
 };

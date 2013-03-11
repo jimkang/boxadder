@@ -75,7 +75,8 @@ Meteor.methods({
 			publiclyReadable: options.publiclyReadable, 
 			publiclyWritable: options.publiclyWritable, 
 			usersThatCanRead: options.usersThatCanRead, 
-			usersThatCanWrite: options.usersThatCanWrite
+			usersThatCanWrite: options.usersThatCanWrite,
+			urlId: boardURLId(options.name)
 		});
 	},
 	
@@ -198,6 +199,16 @@ function sumForBox(box) {
 	return total;	
 }
 
+function boardURLId(boardName) {
+	boardName = encodeURIComponent(boardName.replace(' ', '-'));
+	var urlId = boardName;
+	var appendedNumber = 1;
+	while (Boards.find({boardURLId: urlId}).count() > 0) {
+		urlId = boardName + "-" + appendedNumber;
+	}
+	return urlId;
+}
+
 if (Meteor.isServer) {	
 	
 	// Because this operation requires chained insert calls, this has to be 
@@ -221,6 +232,7 @@ if (Meteor.isServer) {
 				currentBoard[propname] = initPropDict[propname];
 			}
 		}
+		currentBoard.urlId = boardURLId(currentBoard.name);
 
 		var newBoardId = Boards.insert(currentBoard); 
 		if (newBoardId) {

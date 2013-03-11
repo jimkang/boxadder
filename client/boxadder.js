@@ -240,8 +240,14 @@ Template.boardList.selectedClass = function() {
 
 Template.boardList.events({
 	'click .boardListItem': function(evt) {
+		var oldBoardId = Session.get("currentBoard");
 		// Set the current board.
 		Session.set("currentBoard", this._id);
+		// Make the URL match.
+		var newBoard = getCurrentBoard();
+		if (newBoard.urlId) {
+			history.pushState(oldBoardId, "Boxadder", newBoard.urlId);			
+		}
 	}
 });
 
@@ -263,6 +269,15 @@ Template.boardMetadataSection.writabilitySummary = function() {
 Template.boardMetadataSection.writabilityCssClass = function() {
 	return (this.publiclyWritable || this.owner === Meteor.userId()) ?
 	"writability-label writable" : "writability-label read-only";	
+}
+
+Template.boardMetadataSection.URLToBoard = function() {
+	var board = getCurrentBoard();
+	var url = location.host;
+	if (board && board.urlId) {
+		url += ("/" + board.urlId);
+	}
+	return url;
 }
 
 // TODO: Find how to share a helper among the templates.
