@@ -56,9 +56,8 @@ var BoardDragger = {
 			var clickedElement = 
 			BoardDragger.getTappedElementFromEvent(d3.event.sourceEvent);
 			
-			console.log('clickedElement', clickedElement);
 			if (BoardDragger.elementIsResizeHandle(clickedElement)) {				
-				console.log("Starting resize!");
+				// console.log("Starting resize!");
 				BoardZoomer.lockZoom();
 				
 				BoardDragger.currentResizeHandle = clickedElement;
