@@ -15,13 +15,11 @@ Template.boardControlBar.events({
 			{
 				var bottomMostItem = _.reduce(items, 
 					function(memo, num) { 
-							console.log(memo);
 							return (num.y > memo.y) ? num : memo; 
 						}, 
 						items[0]);
 						
 				nextItemY = bottomMostItem.y;
-				console.log(nextItemY);
 			}
 		}
 
@@ -36,9 +34,12 @@ Template.boardControlBar.events({
 			x: nextItemX, y: nextItemY, width: 240, height: 44,
 			board: Session.get("currentBoard")
     }, 
-		function (error, item) {
+		function (error, itemId) {
       if (error) {						
 				triggerErrorAlert(error, 2000);
+			}
+			else {
+				BoardZoomer.panToCenterOnRect(Items.findOne(itemId));
 			}
     });
 				
@@ -64,9 +65,10 @@ Template.boardControlBar.events({
 			x: nextBoxX, y: nextBoxY, width: 320, height: 320, 
 			board: Session.get("currentBoard")
     }, 
-		function (error, box) {
+		function (error, boxId) {
       if (!error) {						
 				makeSureItemsAreInFrontOfBoxes($('svg')[0]);
+				BoardZoomer.panToCenterOnRect(Boxes.findOne(boxId));
       }
 			else {
 				triggerErrorAlert(error, 2000);

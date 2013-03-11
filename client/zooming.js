@@ -64,22 +64,25 @@ var BoardZoomer = {
 		}
 	},
 	lockZoomToDefaultCenterPanAtDataCoords: function(d) {
-		var boxZoneSel = $('.boxZone');
-		var boardSel = $('#boardSVG');
-		var boardWidth = parseInt(boardSel.attr('width'));
-		var boardHeight = parseInt(boardSel.attr('height'));
-		
 		// unlockZoom will restore the zoom transform to this.
 		BoardZoomer.parsedPreLockTransform = 
 			BoardZoomer.parseScaleAndTranslateFromTransformString(
 				BoardZoomer.boxZoneSelection.attr('transform'));
 		
-		BoardZoomer.tweenToNewZoom(1, 
-			[(-d.x - d.width/2 + boardWidth/2), 
-			(-d.y - d.height/2 + boardHeight/2)], 300);
+		BoardZoomer.panToCenterOnRect(d);
 		
 		BoardZoomer.lockZoom();
 	},
+	panToCenterOnRect: function(rect) {
+		console.log("Centering to rect:", rect);
+		var boardSel = $('#boardSVG');
+		var boardWidth = parseInt(boardSel.attr('width'));
+		var boardHeight = parseInt(boardSel.attr('height'));
+				
+		BoardZoomer.tweenToNewZoom(1, 
+			[(-rect.x - rect.width/2 + boardWidth/2), 
+			(-rect.y - rect.height/2 + boardHeight/2)], 300);
+	},	
 	// A rect is an object that has x, y, width, and height members.
 	zoomToFitAllRects: function(rectArray) {
 		
