@@ -226,6 +226,15 @@ Template.copyBoardDialog.checkPubliclyWritable = function () {
 	return isPubliclyWritable ? "checked='checked'" : "";
 };
 
+Template.copyBoardDialog.suggestedCopyName = function () {
+	var name = "Board Name";
+	var boardToCopy = getCurrentBoard();
+	if (boardToCopy) {
+		name = "Copy of "+ boardToCopy.name;
+	}
+	return name;
+};
+
 Template.boardList.boards = function() {
 	return Boards.find();
 }
