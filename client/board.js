@@ -111,13 +111,14 @@ function initBoxGroupSelect(boxGroupSel) {
 		.attr("height", 48)
 		.classed("box-title", true);
 		
-		appendedSel.call(makeEditable, "title", 20, 0, -18,
-			function (box) {
+		appendedSel.call(makeEditable, "title", 20, 0, -18, "titleInput", {
+			onSetField: function (box) {
 				// When the field is set, update the collection containing the data.
 				syncDatumToCollection(box, ['title'], Boxes, identityPassthrough);
 			},
-			BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, BoardZoomer.unlockZoom, 
-			"titleInput");		
+			onEditStart: BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, 
+			onEditEnd: BoardZoomer.unlockZoom
+		});		
 	})
 	// Append the resize handle.
 	.call(function (groupSelection) {
@@ -199,25 +200,27 @@ function initItemGroupSelection(itemGroupSel) {
 	// Append the title.
 	.call(function (groupSelection) { 
 		groupSelection.append("text").classed("itemtitle", true)
-		.call(makeEditable, "title", 20, -4, -25, 
-			function (d) {
+		.call(makeEditable, "title", 20, -4, -25, "titleInput", {
+			onSetField: function (d) {
 				// When the field is set, update the collection containing the data.
 				syncDatumToCollection(d, ['title'], Items, identityPassthrough);
 			},
-			BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, BoardZoomer.unlockZoom, 
-			"titleInput"
-		); 
+			onEditStart: BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, 
+			onEditEnd: BoardZoomer.unlockZoom
+		}); 
 	})
 	// Append the score label.
 	.call(function (groupSelection) { 
 		groupSelection.append("text").classed("score", true)
-		.call(makeEditable, "score", 4, -18, -22, function (d) {
-			// When the field is set, update the collection containing the data.
-			syncDatumToCollection(d, ['score'], Items, 
-				function(val) { return parseInt(val); });
-		},
-		BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, BoardZoomer.unlockZoom, 
-		"scoreInput");		
+		.call(makeEditable, "score", 4, -18, -22, "scoreInput", {
+			onSetField: function (d) {
+				// When the field is set, update the collection containing the data.
+				syncDatumToCollection(d, ['score'], Items, 
+					function(val) { return parseInt(val); });
+			},
+			onEditStart: BoardZoomer.lockZoomToDefaultCenterPanAtDataCoords, 
+			onEditEnd: BoardZoomer.unlockZoom		
+		});
 	})
 	.call(function (groupSelection) {
 		appendResizeHandlesToGroups(groupSelection, 44);		

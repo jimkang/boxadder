@@ -1,8 +1,10 @@
 // This is https://gist.github.com/GerHobbelt/2653660 with a few changes.
 
-// onSetFieldFunction should be a data param.
+// onSetField should take a data param.
+// valid options keys: onSetField, onEditStart, onEditEnd, validate.
+
 function makeEditable(d, field, inputSize, formXOffset, formYOffset, 
-	onSetFieldFunction, doOnEditStart, doOnEditEnd, inputClass) { 
+	inputClass, options) { 
 	
 	function addEditFormHierarchy(d) {
     var p = this.parentNode;
@@ -27,8 +29,8 @@ function makeEditable(d, field, inputSize, formXOffset, formYOffset,
  
 	 	var onSetFieldFunctionCalled = false;
 		function callOnSetFieldFunction(d) {
-			if (!onSetFieldFunctionCalled) {
-				onSetFieldFunction(d);
+			if (!onSetFieldFunctionCalled && options.onSetField) {
+				options.onSetField(d);
 				onSetFieldFunctionCalled = true;
 			}					
 		}
@@ -53,7 +55,10 @@ function makeEditable(d, field, inputSize, formXOffset, formYOffset,
         el.text(function(d) { return d[field]; });
 			}
 			removeForm();
-			doOnEditEnd();
+			
+			if (options.onEditEnd) {
+				options.onEditEnd();
+			}
 		  $(document).off('click');
 		}
 			
@@ -110,7 +115,9 @@ function makeEditable(d, field, inputSize, formXOffset, formYOffset,
 				.attr("size", inputSize)
 				.each(function(d, i) { 
 					// The text field draws weirdly if we're zoomed in.
-					doOnEditStart(d);
+					if (options.onEditStart) {
+						options.onEditStart(d);
+					}
 					// It's important to call focus *after* the value is set. This way,
 					// the value text gets highlighted.
 					this.focus();
