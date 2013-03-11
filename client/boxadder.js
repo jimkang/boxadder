@@ -338,6 +338,14 @@ Template.board.widthAndHeightAttrs = function() {
 	return 'width=' + width + ' height=' + height + '';
 }
 
+Template.loginWrapper.loginCSSClass = function() {
+	var cssClass = "";
+	if (!Meteor.userId()) {
+		cssClass = "selected bolded";
+	}
+	return cssClass;
+}
+
 /* Template utils */
 
 function triggerErrorAlert(error, duration) {
@@ -377,5 +385,5 @@ function updateBoard(newBoardId) {
 	var oldBoardId = Session.get("currentBoard");
 	// Set the current board. Should cause a reload of the board.
 	Session.set("currentBoard", newBoardId);
-	syncURLToCurrentBoard(oldBoardId);	
+	syncURLToCurrentBoard(oldBoardId);
 }
