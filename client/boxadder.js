@@ -258,7 +258,7 @@ Template.boardMetadataSection.visibilitySummary = function() {
 
 Template.boardMetadataSection.visibilityCssClass = function() {	
 	return this.publiclyReadable ? 
-	"public visibility-label" : "private visibility-label";
+	"public metadataLabel" : "private metadataLabel";
 }
 
 Template.boardMetadataSection.writabilitySummary = function() {
@@ -268,12 +268,12 @@ Template.boardMetadataSection.writabilitySummary = function() {
 
 Template.boardMetadataSection.writabilityCssClass = function() {
 	return (this.publiclyWritable || this.owner === Meteor.userId()) ?
-	"writability-label writable" : "writability-label read-only";	
+	"metadataLabel writable" : "metadataLabel read-only";	
 }
 
 Template.boardMetadataSection.URLToBoard = function() {
 	var board = getCurrentBoard();
-	var url = location.host;
+	var url = location.protocol + "//" + location.host;
 	if (board && board.urlId) {
 		url += ("/" + board.urlId);
 	}

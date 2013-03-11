@@ -109,19 +109,15 @@ a, a:visited, a:active {
 	fill: #8c4;
 }
 
-.visibility-label {
+.metadataLabel {
 	font-size: 0.9em;
 }
 
-.visibility-label.private {
+.metadataLabel.private {
 	color: #a24;
 }
 
-.writability-label {
-	font-size: 0.9em;
-}
-
-.writability-label.read-only {
+.metadataLabel.read-only {
 	color: #a24;
 }
 
@@ -181,4 +177,13 @@ a, a:visited, a:active {
 .boardForm label {
 	font-size: 0.9em;
 	line-height: 2.4em;
+}
+
+.featuredURL {
+	line-height: 1.75em;
+	font-size: 0.8em;
+	font-weight: bold;
+	background-color: rgba(255, 255, 192, 0.75);
+	padding: 3px 3px 3px 3px;
+	margin: 3px 3px 3px 3px;
 }
