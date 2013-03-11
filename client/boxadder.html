@@ -60,25 +60,6 @@
 </template>
 
 <template name="boardControlBar">	
-  {{#if boardIsWritable}}
-	  <span id="new-item-box">
-	    <input type="button" class="addNewItem" value="Add Item" />
-	  </span>
-		
-		<span>
-			<button type="button" class="addNewBox">Add Box</button>
-		</span>		
-	{{/if}}
-	
-	<span>
-		<button type="button" class="zoomToFit">Zoom to Fit</button>
-	</span>
-	
-	<span {{#if currentBoardIsSet}}class="rightJustified"{{/if}}>
-		<a href="mailto:jimkang@ghostcrabworkshop.com?subject=Boxadder" target="_blank">
-			<button type="button" class="questionsButton">Questions/Comments</button>
-		</a>
-	</span>				
 	
 	<p><span class="explanation">Boxadder calculates the sums of items in boxes. As you change things, other people looking at the same board will see those changes!
 	{{#if currentBoardNotSet}}
@@ -95,7 +76,7 @@
 			<p>
 				<ul>
 					<li>
-						<span class="instruction">Add items and boxes with the buttons above.
+						<span class="instruction">Add items and boxes with the buttons.
 						</span>
 					</li>
 					<li>
@@ -116,6 +97,27 @@
 			</p>
 	  {{/if}}		
 	{{/if}}
+	
+  {{#if boardIsWritable}}
+	  <span id="new-item-box">
+	    <input type="button" class="addNewItem" value="Add Item" />
+	  </span>
+		
+		<span>
+			<button type="button" class="addNewBox">Add Box</button>
+		</span>		
+	{{/if}}
+	
+	<span>
+		<button type="button" class="zoomToFit">Zoom to Fit</button>
+	</span>
+	
+	<span {{#if currentBoardIsSet}}class="rightJustified"{{/if}}>
+		<a href="mailto:jimkang@ghostcrabworkshop.com?subject=Boxadder" target="_blank">
+			<button type="button" class="questionsButton">Questions/Comments</button>
+		</a>
+	</span>				
+	
 </template>
 
 <template name="boardAdminSection">
