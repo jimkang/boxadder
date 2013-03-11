@@ -161,6 +161,10 @@ a, a:visited, a:active {
 	margin-right: 1.5em;
 }
 
+.rightFloat {
+	float: right;
+}
+
 .titleInput {
 	font-size: 1.2em;
 }
@@ -172,4 +176,14 @@ a, a:visited, a:active {
 
 .close {
 	float: right;
+}
+
+.boardForm {
+	line-height: 2em;
+	background-color: white;
+}
+
+.boardForm label {
+	font-size: 0.9em;
+	line-height: 2.4em;
 }
