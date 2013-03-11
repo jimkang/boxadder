@@ -80,7 +80,7 @@
 		</a>
 	</span>				
 	
-	<p><span class="explanation">Boxadder calculates the sum of items in boxes. As you change things, other people looking at the same board will see those changes.
+	<p><span class="explanation">Boxadder calculates the sums of items in boxes. As you change things, other people looking at the same board will see those changes!
 	{{#if currentBoardNotSet}}
 	Select a board from the list to get started or create a new one.
 	{{/if}}
@@ -123,10 +123,14 @@
 	  {{#if showNewBoardDialog}}
 	    {{> newBoardDialog}}
 		{{else}}
-			<div>
-				<button type="button" class="addBoard">Add Board</button>
-				<button type="button" class="copyBoard">Copy Board</button>
-			</div>		
+			{{#if showCopyBoardDialog}}
+				{{> copyBoardDialog}}
+			{{else}}
+				<div>
+					<button type="button" class="addBoard">Add Board</button>
+					<button type="button" class="copyBoard">Copy Board</button>
+				</div>
+			{{/if}}
 	  {{/if}}
 	{{else}}
 		<span class="selected"><strong>Sign in</strong></span> to add new boards and to mess with existing ones!
@@ -165,6 +169,41 @@
     <div class="modal-footer">
       <a href="#" class="btn cancel">Cancel</a>
       <a href="#" class="btn btn-primary save">Add</a>
+    </div>
+  </div>
+</template>
+
+<template name="copyBoardDialog">
+  <div class="mask"> </div>
+  <div class="modal">
+    <div class="modal-header">
+      <button type="button" class="close cancel">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      {{#if error}}
+        <div class="alert alert-error">{{error}}</div>
+      {{/if}}
+			
+			<form name="newBoardForm">
+	      <label>Name</label>
+	      <input type="text" class="copiedBoardName span5">
+				<br />
+
+	      <label>Anyone can see it</label>
+	      <input type="checkbox" id="copyIsPubliclyReadable" 
+				class="publiclyReadable" {{checkPubliclyReadable}} />
+				<br />
+
+	      <label>Anyone can change it</label>
+	      <input type="checkbox" id="copyIsPubliclyWritable"
+				class="publiclyWritable" {{checkPubliclyWritable}} />
+			</form>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn cancel">Cancel</a>
+      <a href="#" class="btn btn-primary copy">Copy</a>
     </div>
   </div>
 </template>

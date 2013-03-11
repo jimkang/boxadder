@@ -124,20 +124,12 @@ Template.boardAdminSection.events({
   'click .copyBoard': function (event, template) {
     if (! Meteor.userId()) // must be logged in to copy boards
       return;
-			
-	    Meteor.call('copyBoard', { boardId: Session.get("currentBoard") },
-			function (error, newBoardId) {
-	      if (error) {						
-					triggerErrorAlert(error, 2000);
-				}
-				else {
-					console.log("Setting currentBoard to:", newBoardId);
-					Session.set("currentBoard", newBoardId);
-				}
-	    });
+
+	  Session.set("showCopyBoardDialog", true);
   },
   'click .cancel': function () {
     Session.set("showNewBoardDialog", false);
+    Session.set("showCopyBoardDialog", false);
   },
   'click .save': function (event, template) {
     var name = template.find(".newBoardName").value;
@@ -164,7 +156,31 @@ Template.boardAdminSection.events({
 		else {
 		  Session.set("createError", "It needs a name.");
 		}
-  }
+  },
+  'click .copy': function (event, template) {
+    if (! Meteor.userId()) // must be logged in to copy boards
+      return;
+			
+		var initPropDict = {};
+		var name = template.find(".copiedBoardName").value;
+		if (name) {
+			initPropDict.name = name;
+		}
+    initPropDict.publiclyReadable = template.find("#copyIsPubliclyReadable").checked;
+    initPropDict.publiclyWritable = template.find("#copyIsPubliclyWritable").checked;
+		
+    Meteor.call('copyBoard', 
+		{ boardId: Session.get("currentBoard"), initPropDict: initPropDict},
+		function (error, newBoardId) {
+      if (error) {
+				triggerErrorAlert(error, 2000);
+			}
+			else {
+				// console.log("Setting currentBoard to:", newBoardId);
+				Session.set("currentBoard", newBoardId);
+			}
+    });
+	}	
 });	
 
 // Defining this Handlebars helper method with a reference to the Session 
@@ -174,12 +190,40 @@ Template.boardAdminSection.showNewBoardDialog = function () {
   return Session.get("showNewBoardDialog");
 };
 
+Template.boardAdminSection.showCopyBoardDialog = function () {
+  return Session.get("showCopyBoardDialog");
+};
+
 Template.boardAdminSection.signedIn = function() {
 	return Meteor.userId();
 };
 
 Template.newBoardDialog.error = function () {
   return Session.get("createError");
+};
+
+Template.copyBoardDialog.error = function () {
+  return Session.get("createError");
+};
+
+Template.copyBoardDialog.checkPubliclyReadable = function () {
+	var isPubliclyReadable = false;
+	var boardToCopy = getCurrentBoard();
+	if (boardToCopy) {
+		isPubliclyReadable = boardToCopy.publiclyReadable;
+	}
+	// Check inputs must omit the checked attribute entirely if they are to be 
+	// unchecked – setting it to false or something won't do the trick.
+	return isPubliclyReadable ? "checked='checked'" : "";
+};
+
+Template.copyBoardDialog.checkPubliclyWritable = function () {
+	var isPubliclyWritable = false;
+	var boardToCopy = getCurrentBoard();
+	if (boardToCopy) {
+		isPubliclyWritable = boardToCopy.publiclyWritable;
+	}
+	return isPubliclyWritable ? "checked='checked'" : "";
 };
 
 Template.boardList.boards = function() {
@@ -291,4 +335,13 @@ function boardIsWritable() {
 		canWrite = userCanWriteToBoard(Meteor.userId(), boardId);
 	}
 	return canWrite;	
+}
+
+function getCurrentBoard() {
+	var board = null;
+	var boardId = Session.get("currentBoard");
+	if (boardId) {
+		 board = Boards.findOne(boardId);
+	}
+	return board;
 }

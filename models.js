@@ -205,14 +205,22 @@ if (Meteor.isServer) {
 	// a temp _id for the new board, then using that to create new items and 
 	// boxes. That temp _id would then become invalid after syncing with the 
 	// server.
+	// initPropDict is optional. It is a dict of properties to set on the board 
+	// initially.
 	
-	function copyBoard(boardId, userId) {		
+	function copyBoard(boardId, userId, initPropDict) {		
 		// Create new board.
 		var currentBoard = Boards.findOne({ _id: boardId });
 		// Drop the id from the board and insert that as the new board.
 		delete currentBoard["_id"];
 		// Set the new board owner to the copying user.
 		currentBoard.owner = userId;
+		
+		if (initPropDict) {
+			for (propname in initPropDict) {
+				currentBoard[propname] = initPropDict[propname];
+			}
+		}
 
 		var newBoardId = Boards.insert(currentBoard); 
 		if (newBoardId) {
@@ -259,7 +267,7 @@ if (Meteor.isServer) {
 		  if (! this.userId)
 		    throw new Meteor.Error(403, "You must be logged in");
 		
-			return copyBoard(options.boardId, this.userId);
-		}			
+			return copyBoard(options.boardId, this.userId, options.initPropDict);
+		}
 	});
 }
