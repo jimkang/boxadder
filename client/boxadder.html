@@ -83,32 +83,36 @@
 	
 	{{#if boardIsWritable}}
 		<a href="#" id="expandExplanation">What do I do?</a>
-		<br /><br />
 	  {{#if showExplanation}}
     	<button type="button" id="closeExplanation">&times;</button>
 		
 			<p>
 				<ul>
 					<li>
-						<span class="instruction">Add items and boxes with the buttons.
+						<span class="instruction"><i>Add</i> items and boxes with the <strong>buttons</strong> below.
 						</span>
 					</li>
 					<li>
-						<span class="instruction">Move items or boxes around the board by dragging them.
+						<span class="instruction"><i>Move</i> items or boxes around the board by <strong>dragging</strong> them.
 						</span>
 					</li>
 					<li>
-						<span class="instruction">Drag items or boxes by their corners to resize.
+						<span class="instruction">Drag items or boxes by their <strong>corners</strong> to <i>resize</i>.
 						</span>
 					</li>
 					<li>
-						<span class="instruction">Click numbers or text to edit.</span>
+						<span class="instruction"><i>Edit</i> a number or text label by <strong>clicking</strong> on it.</span>
 					</li>
 					<li>
-						<span class="instruction">Use the mouse wheel or pinch gestures to zoom in and out. Drag in empty spaces to pan around.</span>
+						<span class="instruction"><i>Zoom</i> in and out with the <strong>mouse wheel</strong> or <strong>pinch gestures</strong>.</span>
+						</li>
+						<li>							
+							<span class="instruction"><i>Pan</i> around by <strong>dragging empty spaces</strong>.</span>
 					</li>
 				</ul>
 			</p>
+		{{else}}
+			<br /><br />		
 	  {{/if}}		
 	{{/if}}
 	
