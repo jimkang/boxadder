@@ -1,11 +1,11 @@
 Template.boardControlBar.events({
 	'click .addNewItem': function (event, template) {
-		// Stop the auto zoom to fit behavior.
-		AutoFitZoomer.enabled = false;
+    if (!Meteor.userId()) // must be logged in to create items
+      return;
 		
-		var spaceBetweenItems = 50;
+		// Stop the auto zoom to fit behavior.
+		AutoFitZoomer.enabled = false;		
 		var currentCenter = BoardZoomer.centerOfViewport();
-		console.log(currentCenter);
 		
     Meteor.call('createItem', {
       title: "New Item",
@@ -23,26 +23,18 @@ Template.boardControlBar.events({
 			}
     });
 	},
-  'click .addNewBox': function (event, template) {
-		// Stop the auto zoom to fit behavior.
-		AutoFitZoomer.enabled = false;
-		
-    if (! Meteor.userId()) // must be logged in to create boxes
+  'click .addNewBox': function (event, template) {		
+    if (!Meteor.userId()) // must be logged in to create boxes
       return;
 
-		// TODO: Put them somewhere other than 0, 0.
-	  var nextBoxX = 0;
-	  var nextBoxY = 0;
-		if (nextBoxX === undefined) {
-			nextBoxX = 0;
-		}
-		if (nextBoxY === undefined) {
-			nextBoxY = 0;
-		}
+		// Stop the auto zoom to fit behavior.
+		AutoFitZoomer.enabled = false;
+		var currentCenter = BoardZoomer.centerOfViewport();
 				
     Meteor.call('createBox', {
       title: "New Box",
-			x: nextBoxX, y: nextBoxY, width: 320, height: 320, 
+			x: currentCenter[0] - 320/2, y: currentCenter[1] - 320/2, 
+			width: 320, height: 320, 
 			board: Session.get("currentBoard")
     }, 
 		function (error, boxId) {
@@ -54,10 +46,6 @@ Template.boardControlBar.events({
 				triggerErrorAlert(error, 2000);
 			}
     });
-				
-		// TODO: Wrap to next row at some point.
-		Session.set("nextBoxX", nextBoxX + 64);
-		Session.set("nextBoxY", nextBoxY + 64);
   },
   'click .zoomToFit': function (event, template) {
 		AutoFitZoomer.zoomToFitBoxesAndItems();
