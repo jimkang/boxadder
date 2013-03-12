@@ -201,3 +201,11 @@ a, a:visited, a:active {
 	margin-top: 4px;
 	margin-bottom: 0px;
 }
+
+.aside {
+	font-size: 0.9em;
+}
+
+.aside a, .aside a:visited, .aside a:active {
+	font-size: 1.0em;
+}
