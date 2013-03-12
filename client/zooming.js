@@ -19,7 +19,7 @@ var BoardZoomer = {
 	    .range([height, 0]);
 			
 		BoardZoomer.zoomBehavior = 
-		d3.behavior.zoom().x(x).y(y).scaleExtent([0.0625, 4])
+		d3.behavior.zoom().x(x).y(y).scaleExtent([0.00390625, 4])
 			.on("zoom", BoardZoomer.syncZoomEventToTransform);
 	
 		// When zoom and pan gestures happen inside of #boardSVG, have it call the 
