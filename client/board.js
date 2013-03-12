@@ -300,6 +300,25 @@ function makeSureItemsAreInFrontOfBoxes(svgNode) {
 	});	
 }
 
+var AutoFitZoomer = {
+	enabled: true,
+	zoomToFitIfEnabled: function() {
+		if (AutoFitZoomer.enabled) {
+			AutoFitZoomer.zoomToFitBoxesAndItems();
+		}
+	},
+	zoomToFitBoxesAndItems: function() {
+		var rects = [];
+		
+		var items = Items.find().fetch();
+		var boxes = Boxes.find().fetch();
+		if (items) { rects = rects.concat(items); }
+		if (boxes) { rects = rects.concat(boxes); }
+		
+		BoardZoomer.zoomToFitAllRects(rects);	
+	}	
+};
+
 /* Board populator */
 
 Template.board.rendered = function () {
@@ -313,6 +332,7 @@ Template.board.rendered = function () {
 		boxesContext.run(function() {
 			var boxes = Boxes.find().fetch();
 			matchElementsToBoxes(svgElement, boxes);
+			AutoFitZoomer.zoomToFitIfEnabled();
 		});
 	};
 
@@ -321,10 +341,12 @@ Template.board.rendered = function () {
 		itemsContext.on_invalidate(redrawItems);
 		itemsContext.run(function() {
 			var items = Items.find().fetch();
+			// console.log("items count", items.length);
 			matchElementsToItems(svgElement, items);
 			
 			// This will get rid of the loading message.
 		  Session.set("loadingMessage", null);			
+			AutoFitZoomer.zoomToFitIfEnabled();
 		});
 	};
 	

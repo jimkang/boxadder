@@ -1,5 +1,8 @@
 Template.boardControlBar.events({
 	'click .addNewItem': function (event, template) {
+		// Stop the auto zoom to fit behavior.
+		AutoFitZoomer.enabled = false;
+		
 		var spaceBetweenItems = 50;
 	  var nextItemX = Session.get("nextItemX");
 	  var nextItemY = Session.get("nextItemY");
@@ -47,6 +50,9 @@ Template.boardControlBar.events({
 		Session.set("nextItemY", nextItemY + spaceBetweenItems);
 	},
   'click .addNewBox': function (event, template) {
+		// Stop the auto zoom to fit behavior.
+		AutoFitZoomer.enabled = false;
+		
     if (! Meteor.userId()) // must be logged in to create boxes
       return;
 
@@ -80,14 +86,7 @@ Template.boardControlBar.events({
 		Session.set("nextBoxY", nextBoxY + 64);
   },
   'click .zoomToFit': function (event, template) {
-		var rects = [];
-		
-		var items = Items.find().fetch();
-		var boxes = Boxes.find().fetch();
-		if (items) { rects = rects.concat(items); }
-		if (boxes) { rects = rects.concat(boxes); }
-		
-		BoardZoomer.zoomToFitAllRects(rects);
+		AutoFitZoomer.zoomToFitBoxesAndItems();
 	},
 	'click #expandExplanation': function(event, template) {
 		Session.set('showExplanation', true);
@@ -381,9 +380,11 @@ function syncURLToCurrentBoard(previousBoardId) {
 }
 
 // Updates the currentBoard session member while updating the URL.
-function updateBoard(newBoardId) {
+function updateBoard(newBoardId) {	
+	AutoFitZoomer.enabled = true;
 	var oldBoardId = Session.get("currentBoard");
 	// Set the current board. Should cause a reload of the board.
 	Session.set("currentBoard", newBoardId);
 	syncURLToCurrentBoard(oldBoardId);
+	setTimeout(zoomToFitBoxesAndItems, 500);
 }
