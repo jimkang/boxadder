@@ -200,5 +200,17 @@ var BoardZoomer = {
 			}
 		}
 		return parsed;
+	},
+	
+	centerOfViewport: function() {
+		var scaleAndTranslate = 
+			BoardZoomer.parseScaleAndTranslateFromTransformString(
+				BoardZoomer.boxZoneSelection.attr('transform'));
+		var boardSel = $('#boardSVG');
+		var boardWidth = parseInt(boardSel.attr('width'));
+		var boardHeight = parseInt(boardSel.attr('height'));
+		
+		return [(-scaleAndTranslate.translate[0] + boardWidth/2)/scaleAndTranslate.scale, 
+			(-scaleAndTranslate.translate[1] + boardHeight/2)/scaleAndTranslate.scale];
 	}
 }

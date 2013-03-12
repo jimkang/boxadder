@@ -4,37 +4,14 @@ Template.boardControlBar.events({
 		AutoFitZoomer.enabled = false;
 		
 		var spaceBetweenItems = 50;
-	  var nextItemX = Session.get("nextItemX");
-	  var nextItemY = Session.get("nextItemY");
-
-		if (nextItemX === undefined) {
-			nextItemX = 0;
-		}
-		if (nextItemY === undefined) {
-			// Find the item with the greatest y and then add the offset.
-			nextItemY = 0;
-			var items = Items.find().fetch();
-			if (items.length > 0)
-			{
-				var bottomMostItem = _.reduce(items, 
-					function(memo, num) { 
-							return (num.y > memo.y) ? num : memo; 
-						}, 
-						items[0]);
-						
-				nextItemY = bottomMostItem.y;
-			}
-		}
-
-		// TODO: Put them somewhere other than 0, 0.
-	  var nextItemX = 0;
-	  var nextItemY = 0;
-				
-		console.log("Final nextItemY: " + nextItemY);
+		var currentCenter = BoardZoomer.centerOfViewport();
+		console.log(currentCenter);
+		
     Meteor.call('createItem', {
       title: "New Item",
 			score: 0,
-			x: nextItemX, y: nextItemY, width: 240, height: 44,
+			x: currentCenter[0] - 240/2, y: currentCenter[1] - 44/2, 
+			width: 240, height: 44,
 			board: Session.get("currentBoard")
     }, 
 		function (error, itemId) {
@@ -45,9 +22,6 @@ Template.boardControlBar.events({
 				BoardZoomer.panToCenterOnRect(Items.findOne(itemId));
 			}
     });
-				
-		Session.set("nextItemX", nextItemX);
-		Session.set("nextItemY", nextItemY + spaceBetweenItems);
 	},
   'click .addNewBox': function (event, template) {
 		// Stop the auto zoom to fit behavior.
