@@ -117,6 +117,9 @@ var BoardDragger = {
 			collection = Boxes;
 		}
 
+		// Stop the auto zoom to fit behavior.
+		AutoFitZoomer.enabled = false;		
+
 		syncDatumToCollection(d, ['width', 'height'], collection, 
 			function(val) { return parseInt(val); });		
 		BoardDragger.currentlyResizing = false;
@@ -146,6 +149,9 @@ var BoardDragger = {
 		else if (className == 'box') {
 			collection = Boxes;
 		}
+
+		// Stop the auto zoom to fit behavior.
+		AutoFitZoomer.enabled = false;		
 
 		syncDatumToCollection(d, ['x', 'y'], collection, 
 			function(val) { return parseInt(val); });
